@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../app/theme.dart';
@@ -6,9 +7,9 @@ import '../../core/auth/auth_controller.dart';
 import '../../core/auth/google_auth_gateway.dart';
 import '../../core/errors/api_exception.dart';
 import 'brand_mark.dart';
+import 'google_button.dart';
 
-/// The only sign-in surface of the app: Continue with Google. There is no
-/// email/password path for patients.
+/// Continue with Google, or browse as a guest. There is no email/password.
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -17,7 +18,7 @@ class LoginScreen extends StatelessWidget {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await auth.signInWithGoogle();
-      // The router moves to Home on its own once the state flips.
+      // The router moves to the dashboard once the state flips.
     } on GoogleSignInCancelled {
       // The patient closed the picker; nothing to say.
     } catch (e) {
@@ -39,94 +40,70 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final busy = context.watch<AuthController>().busy;
     final theme = Theme.of(context);
-    return Scaffold(
-      backgroundColor: ClinicColors.surface,
-      body: SafeArea(
-        child: LayoutBuilder(
-          // Scrolls on short screens instead of overflowing; fills tall ones.
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: ClinicColors.surface,
+        body: LayoutBuilder(
           builder: (context, box) => SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: ClinicSpacing.xl),
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: box.maxHeight),
               child: IntrinsicHeight(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Spacer(flex: 2),
-                    const BrandMark(size: 64),
-                    const SizedBox(height: ClinicSpacing.xl),
-                    Text(
-                      'Find and book\ntrusted healthcare',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontSize: 30,
-                      ),
-                    ),
-                    const SizedBox(height: ClinicSpacing.md),
-                    Text(
-                      'Discover clinics and doctors near you, book a visit in a few '
-                      'taps, and follow your place in the queue live.',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: ClinicColors.inkMuted,
-                      ),
-                    ),
-                    const SizedBox(height: ClinicSpacing.xl),
-                    const _Benefit(
-                      icon: Icons.verified_user_outlined,
-                      text: 'Real clinics and doctors',
-                    ),
-                    const _Benefit(
-                      icon: Icons.event_available_outlined,
-                      text: 'Live appointment availability',
-                    ),
-                    const _Benefit(
-                      icon: Icons.confirmation_number_outlined,
-                      text: 'Same-day tokens and live queue',
-                    ),
-                    const Spacer(flex: 3),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: busy ? null : () => _signIn(context),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: ClinicColors.ink,
-                          disabledBackgroundColor: ClinicColors.ink.withValues(
-                            alpha: 0.6,
-                          ),
+                    const _Hero(),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          24,
+                          28,
+                          24,
+                          24 + MediaQuery.paddingOf(context).bottom,
                         ),
-                        child: busy
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.4,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _GoogleG(),
-                                  SizedBox(width: 12),
-                                  Flexible(
-                                    child: Text(
-                                      'Continue with Google',
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Welcome',
+                              style: theme.textTheme.headlineMedium,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Sign in to book visits and follow your queue '
+                              'live, or look around first.',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontSize: 15,
                               ),
+                            ),
+                            const Spacer(),
+                            const SizedBox(height: ClinicSpacing.xl),
+                            GoogleButton(
+                              filled: true,
+                              busy: busy,
+                              onPressed: () => _signIn(context),
+                            ),
+                            const SizedBox(height: ClinicSpacing.md),
+                            OutlinedButton(
+                              onPressed: busy
+                                  ? null
+                                  : context
+                                        .read<AuthController>()
+                                        .continueAsGuest,
+                              child: const Text('Continue as guest'),
+                            ),
+                            const SizedBox(height: ClinicSpacing.lg),
+                            Text(
+                              'Guests can browse clinics and doctors. '
+                              'Booking needs a Google sign-in.',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: ClinicSpacing.md),
-                    Center(
-                      child: Text(
-                        'We use your Google account only to sign you in.',
-                        style: theme.textTheme.bodySmall,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: ClinicSpacing.xl),
                   ],
                 ),
               ),
@@ -138,58 +115,101 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-class _Benefit extends StatelessWidget {
-  const _Benefit({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
+class _Hero extends StatelessWidget {
+  const _Hero();
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: ClinicColors.primarySoft,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 19, color: ClinicColors.primary),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: ClinicGradients.hero,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  BrandMark(size: 40, inverted: true),
+                  SizedBox(width: 10),
+                  Text(
+                    'Clinic',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                'Find and book\ntrusted healthcare',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  height: 1.15,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: const [
+                  _Chip(icon: Icons.verified_rounded, label: 'Real clinics'),
+                  _Chip(
+                    icon: Icons.event_available_rounded,
+                    label: 'Live slots',
+                  ),
+                  _Chip(
+                    icon: Icons.confirmation_number_rounded,
+                    label: 'Queue tokens',
+                  ),
+                ],
+              ),
+            ],
           ),
-          const SizedBox(width: ClinicSpacing.md),
-          Expanded(
-            child: Text(text, style: Theme.of(context).textTheme.titleSmall),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// A plain white "G" badge — avoids bundling Google's trademarked logo asset.
-class _GoogleG extends StatelessWidget {
-  const _GoogleG();
+class _Chip extends StatelessWidget {
+  const _Chip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 24,
-      height: 24,
-      alignment: Alignment.center,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
       ),
-      child: const Text(
-        'G',
-        style: TextStyle(
-          color: ClinicColors.ink,
-          fontWeight: FontWeight.w800,
-          fontSize: 14,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+        ],
       ),
     );
   }

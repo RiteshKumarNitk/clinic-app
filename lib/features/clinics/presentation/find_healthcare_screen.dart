@@ -14,9 +14,16 @@ import 'clinic_card.dart';
 /// Find Healthcare: server-side search over clinics or doctors, with
 /// infinite scroll.
 class FindHealthcareScreen extends StatefulWidget {
-  const FindHealthcareScreen({super.key, this.initialQuery});
+  const FindHealthcareScreen({
+    super.key,
+    this.initialQuery,
+    this.initialDoctors = false,
+  });
 
   final String? initialQuery;
+
+  /// Open on the Doctors segment instead of Clinics.
+  final bool initialDoctors;
 
   @override
   State<FindHealthcareScreen> createState() => _FindHealthcareScreenState();
@@ -27,7 +34,7 @@ enum _Mode { clinics, doctors }
 class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
   late final _search = TextEditingController(text: widget.initialQuery ?? '');
   late String _query = widget.initialQuery?.trim() ?? '';
-  _Mode _mode = _Mode.clinics;
+  late _Mode _mode = widget.initialDoctors ? _Mode.doctors : _Mode.clinics;
   Timer? _debounce;
 
   @override

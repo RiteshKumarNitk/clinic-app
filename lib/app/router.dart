@@ -42,6 +42,7 @@ class Routes {
   static String appointment(String orgId, String appointmentId) =>
       '/appointments/$orgId/$appointmentId';
   static String queue(String appointmentId) => '/queue/$appointmentId';
+  static const findDoctors = '/find?mode=doctors';
   static String findWithQuery(String q) =>
       '/find?q=${Uri.encodeQueryComponent(q)}';
 }
@@ -52,6 +53,7 @@ final _rootKey = GlobalKey<NavigatorState>();
 ///  * restoring  → splash (never a premature login screen)
 ///  * signed out → Continue with Google
 ///  * signed in  → every screen opens directly; no screen asks again.
+///  * guest      → discovery opens; personal routes need sign-in.
 GoRouter buildRouter(AuthController auth) {
   return GoRouter(
     navigatorKey: _rootKey,
@@ -66,6 +68,10 @@ GoRouter buildRouter(AuthController auth) {
           return at == Routes.login ? null : Routes.login;
         case AuthStatus.authenticated:
           return at == Routes.splash || at == Routes.login ? Routes.home : null;
+        case AuthStatus.guest:
+          if (at == Routes.splash || at == Routes.login) return Routes.home;
+          // Safety net — the UI asks guests to sign in before these.
+          return _isPersonal(at) ? Routes.home : null;
       }
     },
     routes: [
@@ -92,9 +98,11 @@ GoRouter buildRouter(AuthController auth) {
               GoRoute(
                 path: Routes.find,
                 builder: (_, state) => FindHealthcareScreen(
-                  // A new search from Home re-keys the screen.
-                  key: ValueKey(state.uri.queryParameters['q']),
+                  // A new search or mode from Home re-keys the screen.
+                  key: ValueKey(state.uri.toString()),
                   initialQuery: state.uri.queryParameters['q'],
+                  initialDoctors:
+                      state.uri.queryParameters['mode'] == 'doctors',
                 ),
               ),
             ],
@@ -179,6 +187,14 @@ GoRouter buildRouter(AuthController auth) {
     ],
   );
 }
+
+/// Routes that act on the patient's own account (booking, tokens,
+/// appointments, queue) — never reachable as a guest.
+bool _isPersonal(String location) =>
+    location.startsWith('/queue/') ||
+    location.startsWith('/appointments/') ||
+    location == Routes.bookingConfirmed ||
+    RegExp(r'^/doctors/[^/]+/(book|token)').hasMatch(location);
 
 /// Booking steps carry their in-progress draft as `extra`. If it's missing
 /// (e.g. process death), restart from the doctor rather than crash.

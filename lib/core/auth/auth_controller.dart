@@ -14,6 +14,11 @@ enum AuthStatus {
   unknown,
   authenticated,
   unauthenticated,
+
+  /// Browsing without an account: discovery works, anything personal
+  /// (booking, appointments, queue) asks for Google sign-in first. Never
+  /// persisted — the next launch shows the login screen again.
+  guest,
 }
 
 /// The one authentication state of the Clinic App. The router, every screen
@@ -40,6 +45,7 @@ class AuthController extends ChangeNotifier {
   AuthStatus get status => _status;
   AppUser? get user => _user;
   bool get isAuthenticated => _status == AuthStatus.authenticated;
+  bool get isGuest => _status == AuthStatus.guest;
 
   /// True while the Google → platform exchange is running.
   bool get busy => _busy;
@@ -50,29 +56,45 @@ class AuthController extends ChangeNotifier {
   /// expired access token on the way). If the network is down, a stored
   /// session plus the cached profile still opens the app — only a server
   /// rejection signs the patient out.
-  Future<void> restore() async {
+  ///
+  /// [minimumSplash] keeps the branded splash up for at least that long, so it
+  /// never flashes by on a fast device.
+  Future<void> restore({Duration minimumSplash = Duration.zero}) async {
+    final started = DateTime.now();
+    final next = await _restoredStatus();
+    final remaining = minimumSplash - DateTime.now().difference(started);
+    if (remaining > Duration.zero) await Future<void>.delayed(remaining);
+    _set(next);
+  }
+
+  Future<AuthStatus> _restoredStatus() async {
     final tokens = await _storage.read();
-    if (tokens == null) return _set(AuthStatus.unauthenticated);
+    if (tokens == null) return AuthStatus.unauthenticated;
 
     try {
       await _loadMe();
-      _set(AuthStatus.authenticated);
+      return AuthStatus.authenticated;
     } on ApiException catch (e) {
       if (e.isUnauthenticated) {
         await _storage.clear();
         _user = null;
-        return _set(AuthStatus.unauthenticated);
+        return AuthStatus.unauthenticated;
       }
       final cached = await _storage.readCachedUser();
       if (cached != null) {
         _user = AppUser.fromJson(jsonDecode(cached) as Map<String, dynamic>);
-        return _set(AuthStatus.authenticated);
       }
-      // Session exists but nothing to show and no network: still treat as
-      // signed in; screens show their own offline states.
-      _set(AuthStatus.authenticated);
+      // Session exists but no network: still signed in; screens show their
+      // own offline states.
+      return AuthStatus.authenticated;
     }
   }
+
+  /// "Continue as guest" on the login screen.
+  void continueAsGuest() => _set(AuthStatus.guest);
+
+  /// Leave guest mode and return to the login screen.
+  void exitGuest() => _set(AuthStatus.unauthenticated);
 
   /// Continue with Google → ID token → `POST /auth/google/verify` → session.
   /// Returns normally on success; throws [GoogleSignInCancelled] if the user

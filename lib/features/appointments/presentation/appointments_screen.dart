@@ -5,9 +5,11 @@ import 'package:provider/provider.dart';
 import '../../../app/dependencies.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
+import '../../../core/auth/auth_controller.dart';
 import '../../../core/utils/clinic_time.dart';
 import '../../../core/widgets/async_view.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../auth/sign_in_prompt_view.dart';
 import '../data/appointment_models.dart';
 import '../data/appointment_repository.dart';
 import 'appointment_card.dart';
@@ -45,6 +47,18 @@ class AppointmentsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final repo = context.read<AppointmentRepository>();
     final version = context.watch<AppointmentsChanged>().version;
+    if (!context.watch<AuthController>().isAuthenticated) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('My appointments')),
+        body: const SignInPromptView(
+          icon: Icons.event_note_rounded,
+          title: 'Your visits, in one place',
+          message:
+              'Sign in to see upcoming appointments, past visits and '
+              'your queue tokens.',
+        ),
+      );
+    }
 
     return DefaultTabController(
       length: 2,

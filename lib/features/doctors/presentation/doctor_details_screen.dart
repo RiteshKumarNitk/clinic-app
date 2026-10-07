@@ -8,6 +8,7 @@ import '../../../core/utils/clinic_time.dart';
 import '../../../core/widgets/async_view.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../appointments/presentation/booking_draft.dart';
+import '../../auth/sign_in_sheet.dart';
 import '../../queue/data/queue_models.dart';
 import '../data/doctor_models.dart';
 import '../data/doctor_repository.dart';
@@ -291,8 +292,10 @@ class _ActionBar extends StatelessWidget {
           children: [
             if (mode.offersSlots)
               FilledButton.icon(
-                onPressed: () =>
-                    context.push(Routes.bookType(doctor.id), extra: draft),
+                onPressed: () => _signedIn(
+                  context,
+                  () => context.push(Routes.bookType(doctor.id), extra: draft),
+                ),
                 icon: const Icon(Icons.event_available_rounded),
                 label: const Text('Book appointment'),
               ),
@@ -309,8 +312,10 @@ class _ActionBar extends StatelessWidget {
                         ? "Get today's token"
                         : "Today's tokens unavailable",
                   );
-                  void go() =>
-                      context.push(Routes.token(doctor.id), extra: draft);
+                  void go() => _signedIn(
+                    context,
+                    () => context.push(Routes.token(doctor.id), extra: draft),
+                  );
                   return mode.offersSlots
                       ? OutlinedButton(
                           onPressed: bookable ? go : null,
@@ -328,4 +333,16 @@ class _ActionBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Booking is personal: guests sign in first, then continue where they were.
+Future<void> _signedIn(BuildContext context, VoidCallback then) async {
+  final ok = await requireSignIn(
+    context,
+    title: 'Sign in to book',
+    message:
+        'Your appointment and queue token are linked to your Google '
+        'account so you can track them anytime.',
+  );
+  if (ok && context.mounted) then();
 }

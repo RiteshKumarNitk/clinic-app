@@ -28,6 +28,30 @@ class ClinicColors {
   static const dangerSoft = Color(0xFFFDECEA);
 }
 
+/// Brand gradient for hero surfaces (splash, login, home header).
+class ClinicGradients {
+  ClinicGradients._();
+
+  static const hero = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF14A79C), Color(0xFF0B5C69)],
+  );
+}
+
+/// Soft, diffuse elevation — used instead of hard Material shadows.
+class ClinicShadows {
+  ClinicShadows._();
+
+  static const soft = [
+    BoxShadow(color: Color(0x140F1E2E), blurRadius: 24, offset: Offset(0, 8)),
+  ];
+
+  static const lifted = [
+    BoxShadow(color: Color(0x290F1E2E), blurRadius: 32, offset: Offset(0, 14)),
+  ];
+}
+
 class ClinicSpacing {
   ClinicSpacing._();
 

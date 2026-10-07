@@ -52,7 +52,7 @@ void main() {
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Asha'), findsWidgets);
-    expect(find.text('Find healthcare'), findsWidgets);
+    expect(find.text('Clinics to explore'), findsOneWidget);
     expect(
       find.text('Demo Clinic (synthetic data — not real patients)'),
       findsWidgets,
@@ -72,7 +72,7 @@ void main() {
       }
 
       await noLogin();
-      expect(find.text('Upcoming appointment'), findsOneWidget);
+      expect(find.text('Upcoming visit'), findsOneWidget);
 
       await tester.tap(find.text('Appointments'));
       await noLogin();
@@ -143,5 +143,84 @@ void main() {
     // Stop the polling timer.
     await tester.pumpWidget(const SizedBox());
     deps.auth.dispose();
+  });
+
+  group('guest mode', () {
+    Future<Dependencies> enterAsGuest(WidgetTester tester) async {
+      final (deps, _) = await pumpApp(tester);
+      await tester.tap(find.text('Continue as guest'));
+      await tester.pumpAndSettle();
+      return deps;
+    }
+
+    testWidgets('guest browses the dashboard and real clinics', (tester) async {
+      final deps = await enterAsGuest(tester);
+      expect(deps.auth.isGuest, isTrue);
+      expect(find.text("You're browsing as a guest"), findsOneWidget);
+      expect(
+        find.text('Demo Clinic (synthetic data — not real patients)'),
+        findsWidgets,
+      );
+      // No personal data is requested for a guest.
+      expect(find.text('Upcoming visit'), findsNothing);
+    });
+
+    testWidgets('guest Appointments tab asks to sign in', (tester) async {
+      await enterAsGuest(tester);
+      await tester.tap(find.text('Appointments'));
+      await tester.pumpAndSettle();
+      expect(find.text('Your visits, in one place'), findsOneWidget);
+      expect(find.text('Continue with Google'), findsOneWidget);
+    });
+
+    testWidgets('guest booking asks to sign in, then continues', (
+      tester,
+    ) async {
+      final deps = await enterAsGuest(tester);
+      final router =
+          tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig!
+              as dynamic;
+      router.push('/doctors/$doctorId');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Book appointment'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sign in to book'), findsOneWidget);
+
+      // "Keep browsing" stays on the doctor.
+      await tester.tap(find.text('Keep browsing'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sign in to book'), findsNothing);
+      expect(find.text('Book appointment'), findsOneWidget);
+
+      // Signing in from the sheet goes straight on to booking.
+      await tester.tap(find.text('Book appointment'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pumpAndSettle();
+      expect(deps.auth.isAuthenticated, isTrue);
+      expect(find.text('Type of visit'), findsOneWidget);
+    });
+
+    testWidgets('guest cannot deep-link into personal screens', (tester) async {
+      await enterAsGuest(tester);
+      final router =
+          tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig!
+              as dynamic;
+      router.go('/queue/appt-t?org=$orgId');
+      await tester.pumpAndSettle();
+      expect(find.text('Live queue'), findsNothing);
+      expect(find.text("You're browsing as a guest"), findsOneWidget);
+    });
+
+    testWidgets('guest returns to login from Profile', (tester) async {
+      await enterAsGuest(tester);
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      expect(find.text('Guest'), findsOneWidget);
+      await tester.tap(find.text('Back to login'));
+      await tester.pumpAndSettle();
+      expect(find.text('Continue as guest'), findsOneWidget);
+    });
   });
 }

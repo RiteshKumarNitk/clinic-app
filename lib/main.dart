@@ -18,6 +18,6 @@ void main() {
   final deps = Dependencies.production();
   // Session restoration starts immediately; the router holds the splash
   // until it settles, so the login screen never flashes for a signed-in user.
-  deps.auth.restore();
+  deps.auth.restore(minimumSplash: const Duration(milliseconds: 1600));
   runApp(ClinicApp(deps: deps));
 }
