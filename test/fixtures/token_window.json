@@ -1,0 +1,1 @@
+{"date":"2026-10-07","timezone":"Asia/Kolkata","opensAt":"07:00","closesAt":"11:00","queueStartAt":"09:00","opensAtUtc":"2026-10-07T01:30:00.000Z","closesAtUtc":"2026-10-07T05:30:00.000Z","queueStartUtc":"2026-10-07T03:30:00.000Z","status":"CLOSED","bookable":false,"reason":"Token booking closed today at 11:00.","errorCode":"TOKEN_BOOKING_CLOSED"}
