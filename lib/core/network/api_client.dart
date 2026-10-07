@@ -57,6 +57,12 @@ class ApiClient {
     Auth auth = Auth.required,
   }) async => _asMap(await _send('POST', path, body: body, auth: auth));
 
+  Future<JsonMap> delete(
+    String path, {
+    JsonMap? body,
+    Auth auth = Auth.required,
+  }) async => _asMap(await _send('DELETE', path, body: body, auth: auth));
+
   /// `{ data: [...] }` collections.
   Future<List<JsonMap>> getList(
     String path, {

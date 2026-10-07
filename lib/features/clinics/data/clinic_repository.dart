@@ -16,9 +16,18 @@ class ClinicRepository {
   );
   final _details = MemoCache<ClinicDetail>(ttl: const Duration(minutes: 5));
 
+  final _filters = MemoCache<DiscoveryFilters>(
+    ttl: const Duration(minutes: 10),
+  );
+
+  /// [near] ranks by distance from (lat, lng). Coordinates are rounded to
+  /// ~1 km before leaving the phone — enough for ranking, kinder to privacy,
+  /// and it lets nearby patients share the edge cache.
   Future<Paged<ClinicSummary>> list({
     String? query,
     String? city,
+    String? orgType,
+    ({double lat, double lng})? near,
     int page = 1,
     int pageSize = 20,
     bool refresh = false,
@@ -26,6 +35,9 @@ class ClinicRepository {
     final params = {
       if (query != null && query.trim().isNotEmpty) 'q': query.trim(),
       if (city != null && city.trim().isNotEmpty) 'city': city.trim(),
+      if (orgType != null) 'orgType': orgType,
+      if (near != null) 'lat': near.lat.toStringAsFixed(2),
+      if (near != null) 'lng': near.lng.toStringAsFixed(2),
       'page': '$page',
       'pageSize': '$pageSize',
     };
@@ -43,4 +55,8 @@ class ClinicRepository {
       return ClinicDetail.fromJson(json);
     }, refresh: refresh);
   }
+
+  Future<DiscoveryFilters> filters() => _filters.get('all', () async {
+    return DiscoveryFilters.fromJson(await _api.get('/public/filters'));
+  });
 }

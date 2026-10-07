@@ -1,3 +1,4 @@
+import '../../../core/errors/api_exception.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/clinic_time.dart';
 import '../../clinics/data/clinic_repository.dart';
@@ -131,6 +132,39 @@ class AppointmentRepository {
             slug: clinic.slug,
             logoUrl: clinic.logoUrl,
           );
+  }
+
+  /// Family members the patient can book for at this clinic.
+  Future<List<FamilyMember>> family(String organizationId) async {
+    final rows = await _api.getList(
+      '/patient/family',
+      auth: Auth.required,
+      query: {'organizationId': organizationId},
+    );
+    return rows.map(FamilyMember.fromJson).toList(growable: false);
+  }
+
+  /// Moves an appointment to a new slot. The server marks the old one
+  /// RESCHEDULED and returns the new appointment (a new id).
+  Future<Appointment> reschedule({
+    required String organizationId,
+    required String appointmentId,
+    required DateTime scheduledStart,
+    String? appointmentTypeId,
+  }) async {
+    final json = await _api.post(
+      '/orgs/${Uri.encodeComponent(organizationId)}'
+      '/appointments/${Uri.encodeComponent(appointmentId)}/reschedule',
+      body: {
+        'scheduledStart': scheduledStart.toUtc().toIso8601String(),
+        if (appointmentTypeId != null) 'appointmentTypeId': appointmentTypeId,
+      },
+    );
+    final appt = json['appointment'];
+    if (appt is! Map<String, dynamic>) {
+      throw const ApiException(code: 'MALFORMED', message: 'No appointment.');
+    }
+    return Appointment.fromJson(appt);
   }
 
   Future<void> cancel({

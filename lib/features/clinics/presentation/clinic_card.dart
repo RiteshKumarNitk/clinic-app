@@ -30,6 +30,7 @@ class ClinicCard extends StatelessWidget {
     final theme = Theme.of(context);
     final type = orgTypeLabel(clinic.orgType);
     final meta = [
+      if (clinic.distanceKm != null) _distance(clinic.distanceKm!),
       if (clinic.cities.isNotEmpty) clinic.cities.join(' · '),
       if (clinic.doctorCount > 0)
         '${clinic.doctorCount} ${clinic.doctorCount == 1 ? 'doctor' : 'doctors'}',
@@ -126,3 +127,7 @@ class ClinicCard extends StatelessWidget {
     );
   }
 }
+
+String _distance(double km) => km < 1
+    ? '${(km * 1000).round()} m away'
+    : '${km.toStringAsFixed(1)} km away';

@@ -22,6 +22,13 @@ int? intOrNull(Json j, String key) {
   return null;
 }
 
+double? doubleOrNull(Json j, String key) {
+  final v = j[key];
+  if (v is num) return v.toDouble();
+  if (v is String) return double.tryParse(v);
+  return null;
+}
+
 bool boolOr(Json j, String key, bool fallback) {
   final v = j[key];
   return v is bool ? v : fallback;

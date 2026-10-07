@@ -14,6 +14,7 @@ import '../data/appointment_models.dart';
 import '../data/appointment_repository.dart';
 import 'booking_draft.dart';
 import 'booking_widgets.dart';
+import 'booking_for_picker.dart';
 import 'patient_details_form.dart';
 
 /// Step 3 — review and confirm. The server re-validates the slot inside a
@@ -29,6 +30,7 @@ class ConfirmBookingScreen extends StatefulWidget {
 
 class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   final _patient = GlobalKey<PatientDetailsFormState>();
+  final _for = GlobalKey<BookingForPickerState>();
   final _reason = TextEditingController();
   bool _submitting = false;
   String? _error;
@@ -41,8 +43,9 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   }
 
   Future<void> _book() async {
+    final bookingFor = _for.currentState?.read();
     final patient = _patient.currentState?.read();
-    if (patient == null) return;
+    if (patient == null || bookingFor == null) return;
     final draft = widget.draft;
     setState(() {
       _submitting = true;
@@ -59,6 +62,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
           locationId: draft.location?.id,
           reason: _reason.text,
           patient: patient,
+          bookingFor: bookingFor,
         ),
       );
       if (!mounted) return;
@@ -162,7 +166,12 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                         ),
                       ),
                       const SizedBox(height: ClinicSpacing.xl),
-                      Text('Patient', style: theme.textTheme.titleMedium),
+                      BookingForPicker(
+                        key: _for,
+                        organizationId: d.organizationId,
+                      ),
+                      const SizedBox(height: ClinicSpacing.xl),
+                      Text('Your details', style: theme.textTheme.titleMedium),
                       const SizedBox(height: ClinicSpacing.md),
                       PatientDetailsForm(key: _patient),
                       const SizedBox(height: ClinicSpacing.md),

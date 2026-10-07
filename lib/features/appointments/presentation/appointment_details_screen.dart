@@ -9,6 +9,14 @@ import '../../../core/errors/api_exception.dart';
 import '../../../core/utils/clinic_time.dart';
 import '../../../core/widgets/async_view.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/utils/external_actions.dart';
+import '../../clinics/data/clinic_models.dart';
+import '../../clinics/data/clinic_repository.dart';
+import '../../doctors/data/doctor_repository.dart';
+import '../../records/data/records_models.dart';
+import '../../records/data/records_repository.dart';
+import '../../records/presentation/records_screen.dart';
+import 'booking_draft.dart';
 import '../data/appointment_models.dart';
 import '../data/appointment_repository.dart';
 import 'appointment_card.dart';
@@ -45,6 +53,38 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     return a.clinicName == null && p != null
         ? a.withClinic(name: p.clinicName, slug: p.clinicSlug)
         : a;
+  }
+
+  /// Opens the slot picker for this doctor in "choose a new time" mode.
+  Future<void> _reschedule(Appointment a) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final doctor = await context.read<DoctorRepository>().detail(a.doctorId);
+      if (!mounted) return;
+      final type = doctor.clinic.appointmentTypes
+          .where((t) => t.id == a.appointmentTypeId)
+          .firstOrNull;
+      context.push(
+        Routes.reschedule(a.organizationId, a.id),
+        extra: BookingDraft(
+          doctor: doctor,
+          type: type,
+          timezone: a.timezone,
+          rescheduleOf: a,
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            friendlyMessage(
+              e,
+              fallback: "We couldn't load this doctor's times. Try again.",
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _cancel(Appointment a) async {
@@ -153,6 +193,14 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                         label: const Text('View live queue'),
                       ),
                       const SizedBox(height: ClinicSpacing.sm),
+                    ],
+                    if (!a.isToken) ...[
+                      OutlinedButton.icon(
+                        onPressed: () => _reschedule(a),
+                        icon: const Icon(Icons.update_rounded),
+                        label: const Text('Change time'),
+                      ),
+                      const SizedBox(height: ClinicSpacing.xs),
                     ],
                     TextButton(
                       style: TextButton.styleFrom(
@@ -300,6 +348,12 @@ class _Body extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: ClinicSpacing.md),
+        _VisitActions(appointment: a),
+        if (a.status == AppointmentStatus.completed) ...[
+          const SizedBox(height: ClinicSpacing.lg),
+          _VisitSummarySection(appointment: a),
+        ],
         if (a.clinicSlug != null) ...[
           const SizedBox(height: ClinicSpacing.md),
           OutlinedButton.icon(
@@ -309,6 +363,177 @@ class _Body extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Add to calendar · Directions · Call clinic. Phone and coordinates come
+/// from the clinic's public profile (cached), when it has them.
+class _VisitActions extends StatefulWidget {
+  const _VisitActions({required this.appointment});
+
+  final Appointment appointment;
+
+  @override
+  State<_VisitActions> createState() => _VisitActionsState();
+}
+
+class _VisitActionsState extends State<_VisitActions> {
+  ClinicDetail? _clinic;
+
+  @override
+  void initState() {
+    super.initState();
+    final slug = widget.appointment.clinicSlug;
+    if (slug != null) {
+      context
+          .read<ClinicRepository>()
+          .detail(slug)
+          .then((c) {
+            if (mounted) setState(() => _clinic = c);
+          })
+          .catchError((_) {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final a = widget.appointment;
+    final clinic = _clinic;
+    final branch =
+        clinic?.locations.where((l) => l.id == a.locationId).firstOrNull ??
+        clinic?.locations.firstOrNull;
+    final phone = branch?.phone ?? clinic?.publicPhone;
+    final address = branch?.address ?? a.locationCity;
+    final place = [
+      a.clinicName,
+      address,
+    ].whereType<String>().where((s) => s.isNotEmpty).join(', ');
+    final upcoming =
+        a.status.isActive && a.scheduledEnd.isAfter(DateTime.now().toUtc());
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        if (upcoming)
+          ActionChip(
+            avatar: const Icon(Icons.event_rounded, size: 18),
+            label: const Text('Add to calendar'),
+            onPressed: () => ExternalActions.addToCalendar(
+              context,
+              title: 'Doctor visit: ${a.doctorName ?? 'appointment'}',
+              start: a.scheduledStart,
+              end: a.scheduledEnd,
+              details: [
+                a.appointmentTypeName,
+                if (a.isToken && a.tokenNumber != null)
+                  'Token #${a.tokenNumber}',
+                'Booked with Clinic',
+              ].whereType<String>().join(', '),
+              location: place.isEmpty ? null : place,
+            ),
+          ),
+        if (place.isNotEmpty)
+          ActionChip(
+            avatar: const Icon(Icons.directions_rounded, size: 18),
+            label: const Text('Directions'),
+            onPressed: () => ExternalActions.directions(
+              context,
+              label: a.clinicName ?? 'Clinic',
+              address: address,
+              latitude: branch?.latitude,
+              longitude: branch?.longitude,
+            ),
+          ),
+        if (phone != null)
+          ActionChip(
+            avatar: const Icon(Icons.call_rounded, size: 18),
+            label: const Text('Call clinic'),
+            onPressed: () => ExternalActions.call(context, phone),
+          ),
+      ],
+    );
+  }
+}
+
+/// The doctor's signed summary and prescriptions for a completed visit.
+class _VisitSummarySection extends StatefulWidget {
+  const _VisitSummarySection({required this.appointment});
+
+  final Appointment appointment;
+
+  @override
+  State<_VisitSummarySection> createState() => _VisitSummarySectionState();
+}
+
+class _VisitSummarySectionState extends State<_VisitSummarySection> {
+  late final Future<VisitSummary?> _summary = context
+      .read<RecordsRepository>()
+      .visitSummary(
+        organizationId: widget.appointment.organizationId,
+        appointmentId: widget.appointment.id,
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FutureBuilder<VisitSummary?>(
+      future: _summary,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const SkeletonCard(avatar: false, lines: 3);
+        }
+        final summary = snap.data;
+        if (summary == null || summary.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        Widget field(String label, String? value) => value == null
+            ? const SizedBox.shrink()
+            : Padding(
+                padding: const EdgeInsets.only(top: ClinicSpacing.sm),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: theme.textTheme.labelMedium),
+                    const SizedBox(height: 2),
+                    Text(value, style: theme.textTheme.bodyLarge),
+                  ],
+                ),
+              );
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SectionHeader(title: 'Visit summary'),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(ClinicSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    field('Diagnosis', summary.assessment),
+                    field('Plan', summary.plan),
+                    field('Instructions', summary.instructions),
+                    field('Tests advised', summary.testsAdvised),
+                    if (summary.followUpDate != null)
+                      field(
+                        'Follow-up',
+                        ClinicTime.date(
+                          summary.followUpDate!,
+                          widget.appointment.timezone,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            for (final p in summary.prescriptions) ...[
+              const SizedBox(height: ClinicSpacing.md),
+              PrescriptionCard(prescription: p),
+            ],
+          ],
+        );
+      },
     );
   }
 }

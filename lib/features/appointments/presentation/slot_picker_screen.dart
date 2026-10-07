@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../app/dependencies.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/errors/api_exception.dart';
@@ -48,7 +49,78 @@ class _SlotPickerScreenState extends State<SlotPickerScreen> {
     });
   }
 
+  bool _saving = false;
+
+  /// Reschedule: confirm, then move the appointment on the server.
+  Future<void> _reschedule(SlotDay day) async {
+    final old = widget.draft.rescheduleOf!;
+    final slot = _slot!;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Change appointment time?'),
+        content: Text(
+          'From ${ClinicTime.date(old.scheduledStart, old.timezone)}, '
+          '${ClinicTime.time(old.scheduledStart, old.timezone)}\n'
+          'To ${ClinicTime.date(slot.start, day.timezone)}, '
+          '${ClinicTime.time(slot.start, day.timezone)}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Keep current'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(110, 44)),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Change'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _saving = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final changed = context.read<Dependencies>().appointmentsChanged;
+    try {
+      final fresh = await context.read<AppointmentRepository>().reschedule(
+        organizationId: old.organizationId,
+        appointmentId: old.id,
+        scheduledStart: slot.start,
+        appointmentTypeId: widget.draft.type?.id ?? old.appointmentTypeId,
+      );
+      changed.bump();
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Appointment time changed.')),
+      );
+      // Replace the old appointment page with the new one.
+      context.pop();
+      context.pushReplacement(
+        Routes.appointment(fresh.organizationId, fresh.id),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            friendlyMessage(
+              e,
+              fallback: "We couldn't change the time. Please try again.",
+            ),
+          ),
+        ),
+      );
+      if (isSlotConflict(e)) _load();
+    }
+  }
+
   void _continue(SlotDay day) {
+    if (widget.draft.isReschedule) {
+      _reschedule(day);
+      return;
+    }
     context.push(
       Routes.bookConfirm(widget.draft.doctor.id),
       extra: widget.draft.copyWith(slot: _slot, timezone: day.timezone),
@@ -68,8 +140,10 @@ class _SlotPickerScreenState extends State<SlotPickerScreen> {
             children: [
               BookingHeader(
                 draft: widget.draft,
-                step: 2,
-                title: 'Pick a date & time',
+                step: widget.draft.isReschedule ? 0 : 2,
+                title: widget.draft.isReschedule
+                    ? 'Choose a new time'
+                    : 'Pick a date & time',
               ),
               _DateStrip(
                 start: _today,
@@ -85,7 +159,7 @@ class _SlotPickerScreenState extends State<SlotPickerScreen> {
               Expanded(child: _slots(snap)),
               BottomAction(
                 child: FilledButton(
-                  onPressed: _slot != null && day != null
+                  onPressed: _slot != null && day != null && !_saving
                       ? () => _continue(day)
                       : null,
                   child: Text(

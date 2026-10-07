@@ -34,6 +34,7 @@ class ClinicSummary {
     required this.verification,
     required this.cities,
     required this.doctorCount,
+    this.distanceKm,
   });
 
   /// organizationId — the identity. [slug] addresses the public detail route.
@@ -46,6 +47,9 @@ class ClinicSummary {
   final VerificationStatus verification;
   final List<String> cities;
   final int doctorCount;
+
+  /// Distance to the nearest branch, only in "near me" results.
+  final double? distanceKm;
 
   factory ClinicSummary.fromJson(Json j) => ClinicSummary(
     id: reqStr(j, 'id'),
@@ -61,6 +65,7 @@ class ClinicSummary {
         .toSet()
         .toList(growable: false),
     doctorCount: intOrNull(obj(j, '_count') ?? const {}, 'doctorProfiles') ?? 0,
+    distanceKm: doubleOrNull(j, 'distanceKm'),
   );
 }
 
@@ -75,6 +80,8 @@ class ClinicLocation {
     this.postalCode,
     this.country,
     this.phone,
+    this.latitude,
+    this.longitude,
   });
 
   final String id;
@@ -86,6 +93,10 @@ class ClinicLocation {
   final String? postalCode;
   final String? country;
   final String? phone;
+  final double? latitude;
+  final double? longitude;
+
+  bool get hasCoordinates => latitude != null && longitude != null;
 
   /// Only the parts the clinic actually filled in.
   String get address => [
@@ -105,6 +116,8 @@ class ClinicLocation {
     postalCode: str(j, 'postalCode'),
     country: str(j, 'country'),
     phone: str(j, 'phone'),
+    latitude: doubleOrNull(j, 'latitude'),
+    longitude: doubleOrNull(j, 'longitude'),
   );
 }
 
@@ -198,3 +211,25 @@ class ClinicDetail {
     );
   }
 }
+
+/// Filter chips for discovery — `GET /api/public/filters`. Only values that
+/// actually exist, so a chip never leads to an empty list.
+class DiscoveryFilters {
+  const DiscoveryFilters({required this.cities, required this.specialties});
+
+  final List<String> cities;
+  final List<String> specialties;
+
+  factory DiscoveryFilters.fromJson(Json j) => DiscoveryFilters(
+    cities: strList(j, 'cities'),
+    specialties: strList(j, 'specialties'),
+  );
+}
+
+/// Clinic types the backend knows, with patient-facing labels.
+const clinicTypes = <String, String>{
+  'HOSPITAL': 'Hospital',
+  'CLINIC': 'Clinic',
+  'POLYCLINIC': 'Polyclinic',
+  'DIAGNOSTIC_CENTER': 'Diagnostic centre',
+};

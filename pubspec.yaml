@@ -41,6 +41,11 @@ dependencies:
   go_router: ^17.2.3
   intl: ^0.20.3
   timezone: ^0.10.1
+  firebase_core: ^4.15.0
+  firebase_messaging: ^16.7.0
+  flutter_local_notifications: ^20.1.0
+  url_launcher: ^6.3.2
+  geolocator: ^14.0.2
 
 dev_dependencies:
   flutter_test:

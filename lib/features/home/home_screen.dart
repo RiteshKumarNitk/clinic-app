@@ -18,6 +18,7 @@ import '../auth/sign_in_sheet.dart';
 import '../clinics/data/clinic_models.dart';
 import '../clinics/data/clinic_repository.dart';
 import '../clinics/presentation/clinic_card.dart';
+import '../notifications/data/notifications_repository.dart';
 
 /// The dashboard: search, quick actions, the patient's next visit and live
 /// queue (when signed in), and clinics to explore.
@@ -177,6 +178,8 @@ class _Header extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (auth.isAuthenticated) const _Bell(),
+                  const SizedBox(width: ClinicSpacing.sm),
                   GestureDetector(
                     onTap: () => context.go(Routes.profile),
                     child: Container(
@@ -599,6 +602,55 @@ class _ActiveQueueCard extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Notification bell with the unread count across the patient's clinics.
+class _Bell extends StatefulWidget {
+  const _Bell();
+
+  @override
+  State<_Bell> createState() => _BellState();
+}
+
+class _BellState extends State<_Bell> {
+  int _unread = 0;
+  int? _seenVersion;
+
+  void _refresh() {
+    context
+        .read<NotificationsRepository>()
+        .inbox()
+        .then((inbox) {
+          if (mounted) setState(() => _unread = inbox.unreadCount);
+        })
+        .catchError((_) {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final version = context.watch<AppointmentsChanged>().version;
+    if (version != _seenVersion) {
+      _seenVersion = version;
+      _refresh();
+    }
+    return IconButton(
+      tooltip: 'Notifications',
+      onPressed: () async {
+        await context.push(Routes.notifications);
+        if (mounted) setState(() => _unread = 0);
+      },
+      icon: Badge(
+        isLabelVisible: _unread > 0,
+        label: Text(_unread > 9 ? '9+' : '$_unread'),
+        backgroundColor: ClinicColors.danger,
+        child: const Icon(
+          Icons.notifications_none_rounded,
+          color: Colors.white,
+          size: 28,
         ),
       ),
     );

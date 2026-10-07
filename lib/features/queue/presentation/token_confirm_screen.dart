@@ -13,6 +13,7 @@ import '../../../core/widgets/async_view.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../appointments/presentation/booking_draft.dart';
 import '../../appointments/presentation/booking_widgets.dart';
+import '../../appointments/presentation/booking_for_picker.dart';
 import '../../appointments/presentation/patient_details_form.dart';
 import '../../doctors/data/doctor_repository.dart';
 import '../data/queue_models.dart';
@@ -31,12 +32,14 @@ class TokenConfirmScreen extends StatefulWidget {
 
 class _TokenConfirmScreenState extends State<TokenConfirmScreen> {
   final _patient = GlobalKey<PatientDetailsFormState>();
+  final _for = GlobalKey<BookingForPickerState>();
   bool _submitting = false;
   String? _error;
 
   Future<void> _book() async {
+    final bookingFor = _for.currentState?.read();
     final patient = _patient.currentState?.read();
-    if (patient == null) return;
+    if (patient == null || bookingFor == null) return;
     final d = widget.draft;
     setState(() {
       _submitting = true;
@@ -49,6 +52,7 @@ class _TokenConfirmScreenState extends State<TokenConfirmScreen> {
           doctorId: d.doctor.id,
           locationId: d.location?.id,
           patient: patient,
+          bookingFor: bookingFor,
         ),
       );
       if (!mounted) return;
@@ -155,7 +159,12 @@ class _TokenConfirmScreenState extends State<TokenConfirmScreen> {
                   ),
                   if (window.bookable) ...[
                     const SizedBox(height: ClinicSpacing.xl),
-                    Text('Patient', style: theme.textTheme.titleMedium),
+                    BookingForPicker(
+                      key: _for,
+                      organizationId: d.organizationId,
+                    ),
+                    const SizedBox(height: ClinicSpacing.xl),
+                    Text('Your details', style: theme.textTheme.titleMedium),
                     const SizedBox(height: ClinicSpacing.md),
                     PatientDetailsForm(key: _patient),
                   ],

@@ -49,11 +49,13 @@ class TokenRequest {
     required this.patient,
     this.locationId,
     this.reason,
+    this.bookingFor = const BookingFor.self(),
   });
 
   final String organizationId;
   final String doctorId;
   final PatientDetails patient;
+  final BookingFor bookingFor;
   final String? locationId;
   final String? reason;
 
@@ -63,6 +65,7 @@ class TokenRequest {
     'patient': patient.toJson(),
     if (locationId != null) 'locationId': locationId,
     if (reason != null && reason!.trim().isNotEmpty) 'reason': reason!.trim(),
+    ...bookingFor.toJson(),
   };
 }
 

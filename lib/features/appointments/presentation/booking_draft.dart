@@ -10,9 +10,14 @@ class BookingDraft {
     this.type,
     this.slot,
     this.timezone,
+    this.rescheduleOf,
   });
 
   final DoctorDetail doctor;
+
+  /// Set when picking a new time for an existing appointment.
+  final Appointment? rescheduleOf;
+  bool get isReschedule => rescheduleOf != null;
   final AppointmentType? type;
   final Slot? slot;
 
@@ -37,6 +42,7 @@ class BookingDraft {
     type: type ?? this.type,
     slot: slot ?? this.slot,
     timezone: timezone ?? this.timezone,
+    rescheduleOf: rescheduleOf,
   );
 }
 

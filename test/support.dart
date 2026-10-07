@@ -142,6 +142,46 @@ class FakeBackend {
       (_) => jsonResponse(fixture('token_window.json')),
     );
     on('GET /me', (_) => jsonResponse(meJson()));
+    on(
+      'GET /public/filters',
+      (_) => jsonResponse({
+        'cities': ['Bengaluru', 'Jaipur'],
+        'specialties': ['Dermatology', 'General Medicine'],
+      }),
+    );
+    on(
+      'GET /patient/family',
+      (_) => jsonResponse({
+        'data': [
+          {
+            'patientId': 'p-mom',
+            'firstName': 'Sita',
+            'lastName': 'Verma',
+            'relation': 'MOTHER',
+          },
+        ],
+      }),
+    );
+    on(
+      'GET /orgs/$orgId/notifications',
+      (_) => jsonResponse({
+        'data': [
+          {
+            'id': 'n-1',
+            'createdAt': '2026-10-07T05:00:00.000Z',
+            'read': false,
+            'message': 'An appointment was booked.',
+            'href': 'appointments/appt-1',
+          },
+        ],
+        'unreadCount': 1,
+      }),
+    );
+    on(
+      'POST /orgs/$orgId/notifications/read',
+      (_) => jsonResponse({'ok': true}),
+    );
+    on('POST /me/devices', (_) => jsonResponse({'ok': true}));
     on('GET /orgs', (_) => jsonResponse(myOrgsJson()));
     on(
       'GET /orgs/$orgId/appointments',

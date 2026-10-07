@@ -16,9 +16,11 @@ import '../features/clinics/presentation/clinic_details_screen.dart';
 import '../features/clinics/presentation/find_healthcare_screen.dart';
 import '../features/doctors/presentation/doctor_details_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/notifications/presentation/notifications_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/queue/presentation/live_queue_screen.dart';
 import '../features/queue/presentation/token_confirm_screen.dart';
+import '../features/records/presentation/records_screen.dart';
 import '../shared/app_shell.dart';
 
 class Routes {
@@ -42,6 +44,10 @@ class Routes {
   static String appointment(String orgId, String appointmentId) =>
       '/appointments/$orgId/$appointmentId';
   static String queue(String appointmentId) => '/queue/$appointmentId';
+  static String reschedule(String orgId, String appointmentId) =>
+      '/appointments/$orgId/$appointmentId/reschedule';
+  static const notifications = '/notifications';
+  static const records = '/records';
   static const findDoctors = '/find?mode=doctors';
   static String findWithQuery(String q) =>
       '/find?q=${Uri.encodeQueryComponent(q)}';
@@ -178,6 +184,28 @@ GoRouter buildRouter(AuthController auth) {
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,
+        path: '/appointments/:orgId/:appointmentId/reschedule',
+        builder: (_, state) => _withDraft(
+          state,
+          (d) => SlotPickerScreen(draft: d),
+          fallback: () => AppointmentDetailsScreen(
+            organizationId: state.pathParameters['orgId']!,
+            appointmentId: state.pathParameters['appointmentId']!,
+          ),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: Routes.notifications,
+        builder: (_, _) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: Routes.records,
+        builder: (_, _) => const RecordsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
         path: '/queue/:appointmentId',
         builder: (_, state) => LiveQueueScreen(
           appointmentId: state.pathParameters['appointmentId']!,
@@ -191,6 +219,8 @@ GoRouter buildRouter(AuthController auth) {
 /// Routes that act on the patient's own account (booking, tokens,
 /// appointments, queue) — never reachable as a guest.
 bool _isPersonal(String location) =>
+    location == Routes.notifications ||
+    location == Routes.records ||
     location.startsWith('/queue/') ||
     location.startsWith('/appointments/') ||
     location == Routes.bookingConfirmed ||
@@ -198,8 +228,13 @@ bool _isPersonal(String location) =>
 
 /// Booking steps carry their in-progress draft as `extra`. If it's missing
 /// (e.g. process death), restart from the doctor rather than crash.
-Widget _withDraft(GoRouterState state, Widget Function(BookingDraft) build) {
+Widget _withDraft(
+  GoRouterState state,
+  Widget Function(BookingDraft) build, {
+  Widget Function()? fallback,
+}) {
   final draft = state.extra;
   if (draft is BookingDraft) return build(draft);
-  return DoctorDetailsScreen(doctorId: state.pathParameters['doctorId']!);
+  return fallback?.call() ??
+      DoctorDetailsScreen(doctorId: state.pathParameters['doctorId']!);
 }

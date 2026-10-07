@@ -32,32 +32,34 @@ class BookingHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              for (var i = 1; i <= steps; i++) ...[
-                Expanded(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: i <= step
-                          ? ClinicColors.primary
-                          : ClinicColors.border,
-                      borderRadius: BorderRadius.circular(4),
+          if (step > 0)
+            Row(
+              children: [
+                for (var i = 1; i <= steps; i++) ...[
+                  Expanded(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: i <= step
+                            ? ClinicColors.primary
+                            : ClinicColors.border,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
-                ),
-                if (i < steps) const SizedBox(width: 6),
+                  if (i < steps) const SizedBox(width: 6),
+                ],
               ],
-            ],
-          ),
-          const SizedBox(height: ClinicSpacing.md),
-          Text(
-            'Step $step of $steps',
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: ClinicColors.inkMuted,
             ),
-          ),
+          if (step > 0) const SizedBox(height: ClinicSpacing.md),
+          if (step > 0)
+            Text(
+              'Step $step of $steps',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: ClinicColors.inkMuted,
+              ),
+            ),
           const SizedBox(height: 4),
           Text(title, style: theme.textTheme.headlineSmall),
           const SizedBox(height: ClinicSpacing.md),

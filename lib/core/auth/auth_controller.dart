@@ -161,7 +161,13 @@ class AuthController extends ChangeNotifier {
   }
 
   /// Revoke server-side, forget locally, sign out of Google.
+  /// Runs while the session is still valid (e.g. unregister push).
+  Future<void> Function()? beforeLogout;
+
   Future<void> logout() async {
+    try {
+      await beforeLogout?.call();
+    } catch (_) {}
     await _api.logout();
     await _storage.clear();
     await _google.signOut();

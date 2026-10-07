@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme.dart';
+import '../../../core/utils/external_actions.dart';
 import '../../../core/widgets/async_view.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../doctors/presentation/doctor_card.dart';
@@ -110,6 +111,8 @@ class _ClinicBody extends StatelessWidget {
                 const SizedBox(height: ClinicSpacing.md),
                 Text(clinic.tagline!, style: theme.textTheme.bodyLarge),
               ],
+              const SizedBox(height: ClinicSpacing.lg),
+              _ClinicActions(clinic: clinic),
               const SizedBox(height: ClinicSpacing.xl),
               _Panel(
                 title: 'Contact & location',
@@ -259,6 +262,86 @@ class _ClinicSkeleton extends StatelessWidget {
           SkeletonCard(),
         ],
       ),
+    );
+  }
+}
+
+/// Call · Directions · Email · Website — whatever the clinic published.
+class _ClinicActions extends StatelessWidget {
+  const _ClinicActions({required this.clinic});
+
+  final ClinicDetail clinic;
+
+  @override
+  Widget build(BuildContext context) {
+    final branch = clinic.locations.firstOrNull;
+    final phone = clinic.publicPhone ?? branch?.phone;
+    final actions = <(IconData, String, VoidCallback)>[
+      if (phone != null)
+        (
+          Icons.call_rounded,
+          'Call',
+          () => ExternalActions.call(context, phone),
+        ),
+      if (branch != null)
+        (
+          Icons.directions_rounded,
+          'Directions',
+          () => ExternalActions.directions(
+            context,
+            label: clinic.name,
+            address: branch.address.isEmpty ? null : branch.address,
+            latitude: branch.latitude,
+            longitude: branch.longitude,
+          ),
+        ),
+      if (clinic.publicEmail != null)
+        (
+          Icons.mail_outline_rounded,
+          'Email',
+          () => ExternalActions.email(context, clinic.publicEmail!),
+        ),
+      if (clinic.website != null)
+        (
+          Icons.language_rounded,
+          'Website',
+          () => ExternalActions.website(context, clinic.website!),
+        ),
+    ];
+    if (actions.isEmpty) return const SizedBox.shrink();
+    return Row(
+      children: [
+        for (final (i, a) in actions.indexed) ...[
+          if (i > 0) const SizedBox(width: ClinicSpacing.sm),
+          Expanded(
+            child: Material(
+              color: ClinicColors.surface,
+              borderRadius: BorderRadius.circular(ClinicRadius.md),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(ClinicRadius.md),
+                onTap: a.$3,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(ClinicRadius.md),
+                    border: Border.all(color: ClinicColors.border),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(a.$1, color: ClinicColors.primary),
+                      const SizedBox(height: 4),
+                      Text(
+                        a.$2,
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

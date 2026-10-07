@@ -4,15 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/theme.dart';
+import '../../../core/utils/device_location.dart';
 import '../../../core/widgets/paged_list.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../doctors/data/doctor_repository.dart';
 import '../../doctors/presentation/doctor_card.dart';
+import '../data/clinic_models.dart';
 import '../data/clinic_repository.dart';
 import 'clinic_card.dart';
 
-/// Find Healthcare: server-side search over clinics or doctors, with
-/// infinite scroll.
+/// Find Healthcare: server-side search over clinics or doctors with filters
+/// (near me, city, clinic type, specialty) and infinite scroll.
 class FindHealthcareScreen extends StatefulWidget {
   const FindHealthcareScreen({
     super.key,
@@ -37,6 +39,26 @@ class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
   late _Mode _mode = widget.initialDoctors ? _Mode.doctors : _Mode.clinics;
   Timer? _debounce;
 
+  // Filters
+  String? _city;
+  String? _orgType;
+  String? _specialty;
+  ({double lat, double lng})? _near;
+  bool _locating = false;
+  DiscoveryFilters? _filters;
+
+  @override
+  void initState() {
+    super.initState();
+    context
+        .read<ClinicRepository>()
+        .filters()
+        .then((f) {
+          if (mounted) setState(() => _filters = f);
+        })
+        .catchError((_) {});
+  }
+
   @override
   void dispose() {
     _debounce?.cancel();
@@ -51,11 +73,172 @@ class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
     });
   }
 
+  Future<void> _toggleNearMe() async {
+    if (_near != null) {
+      setState(() => _near = null);
+      return;
+    }
+    setState(() => _locating = true);
+    try {
+      final pos = await DeviceLocation.current();
+      if (mounted) setState(() => _near = pos);
+    } on LocationUnavailable catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          action: e.canOpenSettings
+              ? const SnackBarAction(
+                  label: 'Settings',
+                  onPressed: DeviceLocation.openSettings,
+                )
+              : null,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("We couldn't find your location.")),
+      );
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
+  Future<void> _pickCity() async {
+    final cities = _filters?.cities ?? const <String>[];
+    if (cities.isEmpty) return;
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                'Choose a city',
+                style: Theme.of(ctx).textTheme.titleLarge,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.public_rounded),
+              title: const Text('All cities'),
+              onTap: () => Navigator.pop(ctx, ''),
+            ),
+            for (final c in cities)
+              ListTile(
+                leading: const Icon(Icons.location_city_rounded),
+                title: Text(c),
+                trailing: c == _city
+                    ? const Icon(
+                        Icons.check_rounded,
+                        color: ClinicColors.primary,
+                      )
+                    : null,
+                onTap: () => Navigator.pop(ctx, c),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked != null) setState(() => _city = picked.isEmpty ? null : picked);
+  }
+
+  Widget _chip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+    IconData? icon,
+    bool busy = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        avatar: busy
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : icon == null
+            ? null
+            : Icon(
+                icon,
+                size: 18,
+                color: selected
+                    ? ClinicColors.primaryDark
+                    : ClinicColors.inkMuted,
+              ),
+        label: Text(label),
+        selected: selected,
+        showCheckmark: false,
+        side: BorderSide(
+          color: selected ? ClinicColors.primary : ClinicColors.border,
+        ),
+        onSelected: (_) => onTap(),
+      ),
+    );
+  }
+
+  Widget _filterRow() {
+    final children = _mode == _Mode.clinics
+        ? [
+            _chip(
+              label: 'Near me',
+              icon: Icons.near_me_rounded,
+              selected: _near != null,
+              busy: _locating,
+              onTap: _locating ? () {} : _toggleNearMe,
+            ),
+            if ((_filters?.cities ?? const []).isNotEmpty)
+              _chip(
+                label: _city ?? 'City',
+                icon: Icons.location_city_rounded,
+                selected: _city != null,
+                onTap: _pickCity,
+              ),
+            for (final e in clinicTypes.entries)
+              _chip(
+                label: e.value,
+                selected: _orgType == e.key,
+                onTap: () =>
+                    setState(() => _orgType = _orgType == e.key ? null : e.key),
+              ),
+          ]
+        : [
+            for (final s in _filters?.specialties ?? const <String>[])
+              _chip(
+                label: s,
+                selected: _specialty == s,
+                onTap: () =>
+                    setState(() => _specialty = _specialty == s ? null : s),
+              ),
+          ];
+    if (children.isEmpty) return const SizedBox(height: ClinicSpacing.sm);
+    return SizedBox(
+      height: 52,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(
+          horizontal: ClinicSpacing.gutter,
+          vertical: 6,
+        ),
+        children: children,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final clinics = context.read<ClinicRepository>();
     final doctors = context.read<DoctorRepository>();
-    final searching = _query.isNotEmpty;
+    final filtered =
+        _query.isNotEmpty ||
+        (_mode == _Mode.clinics
+            ? _city != null || _orgType != null
+            : _specialty != null);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Find healthcare')),
@@ -116,37 +299,50 @@ class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
               ),
             ),
           ),
-          const SizedBox(height: ClinicSpacing.sm),
+          const SizedBox(height: ClinicSpacing.xs),
+          _filterRow(),
           Expanded(
             child: _mode == _Mode.clinics
                 ? PagedList(
-                    key: ValueKey('clinics:$_query'),
-                    fetch: (page) => clinics.list(query: _query, page: page),
+                    key: ValueKey(
+                      'clinics:$_query:$_city:$_orgType:${_near?.lat}:${_near?.lng}',
+                    ),
+                    fetch: (page) => clinics.list(
+                      query: _query,
+                      city: _city,
+                      orgType: _orgType,
+                      near: _near,
+                      page: page,
+                    ),
                     itemBuilder: (_, c) => ClinicCard(clinic: c),
                     errorMessage: "We couldn't load clinics.",
                     empty: MessageView(
                       icon: Icons.local_hospital_outlined,
-                      title: searching
-                          ? 'No clinics match "$_query".'
+                      title: filtered
+                          ? 'No clinics match these filters.'
                           : 'No clinics are available right now.',
-                      message: searching
-                          ? 'Try a different name or search doctors instead.'
+                      message: filtered
+                          ? 'Try a different name, city or type.'
                           : 'Please check back soon.',
                     ),
                   )
                 : PagedList(
-                    key: ValueKey('doctors:$_query'),
-                    fetch: (page) => doctors.list(query: _query, page: page),
+                    key: ValueKey('doctors:$_query:$_specialty'),
+                    fetch: (page) => doctors.list(
+                      query: _query,
+                      specialty: _specialty,
+                      page: page,
+                    ),
                     itemBuilder: (_, d) =>
                         DoctorCard(doctor: d, showClinic: true),
                     errorMessage: "We couldn't load doctors.",
                     empty: MessageView(
                       icon: Icons.medical_services_outlined,
-                      title: searching
-                          ? 'No doctors match "$_query".'
+                      title: filtered
+                          ? 'No doctors match these filters.'
                           : 'No doctors are available right now.',
-                      message: searching
-                          ? 'Try a name or a specialty like "General Medicine".'
+                      message: filtered
+                          ? 'Try a name or another specialty.'
                           : null,
                     ),
                   ),

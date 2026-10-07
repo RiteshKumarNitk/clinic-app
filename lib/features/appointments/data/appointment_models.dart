@@ -60,6 +60,76 @@ class PatientDetails {
   };
 }
 
+/// Relations the backend accepts for a family member.
+const familyRelations = <String, String>{
+  'SPOUSE': 'Spouse',
+  'FATHER': 'Father',
+  'MOTHER': 'Mother',
+  'CHILD': 'Child',
+  'GUARDIAN': 'Guardian',
+  'OTHER': 'Other',
+};
+
+/// Someone the patient books for — `GET /api/patient/family`.
+class FamilyMember {
+  const FamilyMember({
+    required this.patientId,
+    required this.firstName,
+    required this.lastName,
+    this.relation,
+  });
+
+  final String patientId;
+  final String firstName;
+  final String lastName;
+  final String? relation;
+
+  String get name => '$firstName $lastName'.trim();
+  String? get relationLabel => familyRelations[relation];
+
+  factory FamilyMember.fromJson(Json j) => FamilyMember(
+    patientId: reqStr(j, 'patientId'),
+    firstName: str(j, 'firstName') ?? '',
+    lastName: str(j, 'lastName') ?? '',
+    relation: str(j, 'relation'),
+  );
+}
+
+/// A family member being added at booking time (no record yet).
+class NewDependent {
+  const NewDependent({
+    required this.firstName,
+    required this.lastName,
+    required this.relation,
+  });
+
+  final String firstName;
+  final String lastName;
+  final String relation;
+
+  Json toJson() => {
+    'firstName': firstName.trim(),
+    'lastName': lastName.trim(),
+    'relation': relation,
+  };
+}
+
+/// Who a booking is for: the patient themself (both null), an existing family
+/// member ([patientId]) or a new one ([dependent]).
+class BookingFor {
+  const BookingFor.self() : patientId = null, dependent = null;
+  const BookingFor.member(String this.patientId) : dependent = null;
+  const BookingFor.newMember(NewDependent this.dependent) : patientId = null;
+
+  final String? patientId;
+  final NewDependent? dependent;
+
+  Json toJson() => {
+    if (patientId != null) 'patientId': patientId,
+    if (dependent != null) 'dependent': dependent!.toJson(),
+  };
+}
+
 /// Body of `POST /api/patient/appointments`.
 class BookingRequest {
   const BookingRequest({
@@ -70,10 +140,12 @@ class BookingRequest {
     this.appointmentTypeId,
     this.locationId,
     this.reason,
+    this.bookingFor = const BookingFor.self(),
   });
 
   final String organizationId;
   final String doctorId;
+  final BookingFor bookingFor;
 
   /// Must be one of the instants the slots endpoint returned.
   final DateTime scheduledStart;
@@ -90,6 +162,7 @@ class BookingRequest {
     if (appointmentTypeId != null) 'appointmentTypeId': appointmentTypeId,
     if (locationId != null) 'locationId': locationId,
     if (reason != null && reason!.trim().isNotEmpty) 'reason': reason!.trim(),
+    ...bookingFor.toJson(),
   };
 }
 

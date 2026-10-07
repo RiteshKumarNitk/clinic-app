@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../app/router.dart';
 import '../../app/theme.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/auth/google_auth_gateway.dart';
@@ -104,6 +106,27 @@ class _SignedInProfile extends StatelessWidget {
                       ],
                     ],
                   ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: ClinicSpacing.lg),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                _Row(
+                  icon: Icons.receipt_long_rounded,
+                  title: 'My prescriptions',
+                  subtitle: 'Medicines your doctors prescribed',
+                  onTap: () => context.push(Routes.records),
+                ),
+                const Divider(indent: 72),
+                _Row(
+                  icon: Icons.notifications_none_rounded,
+                  title: 'Notifications',
+                  subtitle: 'Confirmations, reminders and queue updates',
+                  onTap: () => context.push(Routes.notifications),
                 ),
               ],
             ),
@@ -218,11 +241,17 @@ class _GuestProfile extends StatelessWidget {
 }
 
 class _Row extends StatelessWidget {
-  const _Row({required this.icon, required this.title, required this.subtitle});
+  const _Row({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.onTap,
+  });
 
   final IconData icon;
   final String title;
   final String subtitle;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -239,6 +268,13 @@ class _Row extends StatelessWidget {
       ),
       title: Text(title, style: Theme.of(context).textTheme.titleSmall),
       subtitle: Text(subtitle),
+      trailing: onTap == null
+          ? null
+          : const Icon(
+              Icons.chevron_right_rounded,
+              color: ClinicColors.inkFaint,
+            ),
+      onTap: onTap,
     );
   }
 }
