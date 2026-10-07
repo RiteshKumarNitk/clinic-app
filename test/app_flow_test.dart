@@ -223,4 +223,46 @@ void main() {
       expect(find.text('Continue as guest'), findsOneWidget);
     });
   });
+
+  group('system Back button', () {
+    testWidgets('on a main tab, asks before closing the app', (tester) async {
+      await pumpApp(
+        tester,
+        session: const SessionTokens(accessToken: 'a', refreshToken: 'r'),
+      );
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Close Clinic?'), findsOneWidget);
+
+      await tester.tap(find.text('Stay'));
+      await tester.pumpAndSettle();
+      expect(find.text('Close Clinic?'), findsNothing);
+      expect(find.text('Clinics to explore'), findsOneWidget);
+    });
+
+    testWidgets('on the login screen, asks before closing', (tester) async {
+      await pumpApp(tester);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Close Clinic?'), findsOneWidget);
+    });
+
+    testWidgets('on an inner screen, just goes back', (tester) async {
+      await pumpApp(
+        tester,
+        session: const SessionTokens(accessToken: 'a', refreshToken: 'r'),
+      );
+      final router =
+          tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig!
+              as dynamic;
+      router.push('/clinics/demo-clinic');
+      await tester.pumpAndSettle();
+      expect(find.text('Consultation · 15 min'), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Close Clinic?'), findsNothing);
+      expect(find.text('Clinics to explore'), findsOneWidget);
+    });
+  });
 }

@@ -35,6 +35,23 @@ const _patientSafeCodes = {
   'FORBIDDEN',
 };
 
+/// One-line technical description for logs and debug builds — never shown
+/// to patients in release builds.
+String debugDescription(Object error) {
+  if (error is ApiException) {
+    final requestId = error.details is Map
+        ? (error.details as Map)['requestId']
+        : null;
+    return [
+      error.code,
+      if (error.status != null) 'HTTP ${error.status}',
+      if (error.message.isNotEmpty) error.message,
+      if (requestId != null) 'request $requestId',
+    ].join(' · ');
+  }
+  return error.toString();
+}
+
 const _slotConflictCodes = {
   'APPOINTMENT_SLOT_TAKEN',
   'CONFLICT',

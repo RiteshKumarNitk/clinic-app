@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 
@@ -41,6 +42,7 @@ class AuthController extends ChangeNotifier {
   AuthStatus _status = AuthStatus.unknown;
   AppUser? _user;
   bool _busy = false;
+  bool _expiredDuringRestore = false;
 
   AuthStatus get status => _status;
   AppUser? get user => _user;
@@ -64,12 +66,31 @@ class AuthController extends ChangeNotifier {
     final next = await _restoredStatus();
     final remaining = minimumSplash - DateTime.now().difference(started);
     if (remaining > Duration.zero) await Future<void>.delayed(remaining);
+    if (_expiredDuringRestore) {
+      _user = null;
+      await _storage.clear();
+      return _set(AuthStatus.unauthenticated);
+    }
     _set(next);
   }
 
   Future<AuthStatus> _restoredStatus() async {
     final tokens = await _storage.read();
     if (tokens == null) return AuthStatus.unauthenticated;
+
+    // Returning user: open instantly from the cached profile and confirm the
+    // session in the background. A rejected session still signs them out
+    // (the API client reports it via onSessionExpired).
+    final cached = await _storage.readCachedUser();
+    if (cached != null) {
+      try {
+        _user = AppUser.fromJson(jsonDecode(cached) as Map<String, dynamic>);
+        unawaited(_revalidate());
+        return AuthStatus.authenticated;
+      } catch (_) {
+        // Unreadable cache — fall through to a normal network check.
+      }
+    }
 
     try {
       await _loadMe();
@@ -87,6 +108,17 @@ class AuthController extends ChangeNotifier {
       // Session exists but no network: still signed in; screens show their
       // own offline states.
       return AuthStatus.authenticated;
+    }
+  }
+
+  Future<void> _revalidate() async {
+    try {
+      await _loadMe();
+      notifyListeners();
+    } on ApiException catch (e) {
+      if (e.isUnauthenticated) _expire();
+    } catch (_) {
+      // Offline — keep the cached session.
     }
   }
 
@@ -144,6 +176,11 @@ class AuthController extends ChangeNotifier {
   }
 
   void _expire() {
+    // Rejected while the splash is still up: restore() applies it.
+    if (_status == AuthStatus.unknown) {
+      _expiredDuringRestore = true;
+      return;
+    }
     if (_status != AuthStatus.authenticated) return;
     _user = null;
     _storage.clear();

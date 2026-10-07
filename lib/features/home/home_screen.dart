@@ -39,8 +39,11 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadClinics();
   }
 
-  void _loadClinics() {
-    _clinics = context.read<ClinicRepository>().list(pageSize: 5);
+  void _loadClinics({bool refresh = false}) {
+    _clinics = context.read<ClinicRepository>().list(
+      pageSize: 5,
+      refresh: refresh,
+    );
   }
 
   /// Appointments exist only for a signed-in patient; guests get none.
@@ -51,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _refresh() async {
     setState(() {
-      _loadClinics();
+      _loadClinics(refresh: true);
       _appointments = _loadAppointments();
     });
     await Future.wait([

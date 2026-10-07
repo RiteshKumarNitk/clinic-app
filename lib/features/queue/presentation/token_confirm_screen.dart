@@ -1,3 +1,6 @@
+import 'dart:developer' as developer;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -63,6 +66,10 @@ class _TokenConfirmScreenState extends State<TokenConfirmScreen> {
         '${Routes.queue(token.appointmentId)}?org=${d.organizationId}',
       );
     } catch (e) {
+      developer.log(
+        'Token booking failed: ${debugDescription(e)}',
+        name: 'Booking',
+      );
       if (!mounted) return;
       setState(() {
         _submitting = false;
@@ -70,6 +77,8 @@ class _TokenConfirmScreenState extends State<TokenConfirmScreen> {
           e,
           fallback: "We couldn't get a token right now. Please try again.",
         );
+        // Debug builds show the server's real reason under the message.
+        if (kDebugMode) _error = '$_error\n\n${debugDescription(e)}';
       });
     }
   }

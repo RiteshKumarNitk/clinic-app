@@ -1,4 +1,5 @@
 import '../../../core/network/api_client.dart';
+import '../../../core/network/memo_cache.dart';
 import '../../clinics/data/clinic_models.dart';
 import '../../queue/data/queue_models.dart';
 import 'doctor_models.dart';
@@ -29,11 +30,15 @@ class DoctorRepository {
     return Paged.fromJson(json, (j) => DoctorSummary.fromJson(j));
   }
 
-  Future<DoctorDetail> detail(String doctorId) async {
-    final json = await _api.get(
-      '/public/doctors/${Uri.encodeComponent(doctorId)}',
-    );
-    return DoctorDetail.fromJson(json);
+  final _details = MemoCache<DoctorDetail>(ttl: const Duration(minutes: 5));
+
+  Future<DoctorDetail> detail(String doctorId) {
+    return _details.get(doctorId, () async {
+      final json = await _api.get(
+        '/public/doctors/${Uri.encodeComponent(doctorId)}',
+      );
+      return DoctorDetail.fromJson(json);
+    });
   }
 
   Future<TokenWindow> tokenWindow(String doctorId) async {

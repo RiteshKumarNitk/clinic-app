@@ -6,6 +6,7 @@ import '../../app/theme.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/auth/google_auth_gateway.dart';
 import '../../core/errors/api_exception.dart';
+import '../../shared/exit_confirm_scope.dart';
 import 'brand_mark.dart';
 import 'google_button.dart';
 
@@ -41,70 +42,72 @@ class LoginScreen extends StatelessWidget {
     final busy = context.watch<AuthController>().busy;
     final theme = Theme.of(context);
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: ClinicColors.surface,
-        body: LayoutBuilder(
-          builder: (context, box) => SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: box.maxHeight),
-              child: IntrinsicHeight(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _Hero(),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          24,
-                          28,
-                          24,
-                          24 + MediaQuery.paddingOf(context).bottom,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              'Welcome',
-                              style: theme.textTheme.headlineMedium,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Sign in to book visits and follow your queue '
-                              'live, or look around first.',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontSize: 15,
+    return ExitConfirmScope(
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: Scaffold(
+          backgroundColor: ClinicColors.surface,
+          body: LayoutBuilder(
+            builder: (context, box) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: box.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const _Hero(),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            24,
+                            28,
+                            24,
+                            24 + MediaQuery.paddingOf(context).bottom,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                'Welcome',
+                                style: theme.textTheme.headlineMedium,
                               ),
-                            ),
-                            const Spacer(),
-                            const SizedBox(height: ClinicSpacing.xl),
-                            GoogleButton(
-                              filled: true,
-                              busy: busy,
-                              onPressed: () => _signIn(context),
-                            ),
-                            const SizedBox(height: ClinicSpacing.md),
-                            OutlinedButton(
-                              onPressed: busy
-                                  ? null
-                                  : context
-                                        .read<AuthController>()
-                                        .continueAsGuest,
-                              child: const Text('Continue as guest'),
-                            ),
-                            const SizedBox(height: ClinicSpacing.lg),
-                            Text(
-                              'Guests can browse clinics and doctors. '
-                              'Booking needs a Google sign-in.',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodySmall,
-                            ),
-                          ],
+                              const SizedBox(height: 6),
+                              Text(
+                                'Sign in to book visits and follow your queue '
+                                'live, or look around first.',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const Spacer(),
+                              const SizedBox(height: ClinicSpacing.xl),
+                              GoogleButton(
+                                filled: true,
+                                busy: busy,
+                                onPressed: () => _signIn(context),
+                              ),
+                              const SizedBox(height: ClinicSpacing.md),
+                              OutlinedButton(
+                                onPressed: busy
+                                    ? null
+                                    : context
+                                          .read<AuthController>()
+                                          .continueAsGuest,
+                                child: const Text('Continue as guest'),
+                              ),
+                              const SizedBox(height: ClinicSpacing.lg),
+                              Text(
+                                'Guests can browse clinics and doctors. '
+                                'Booking needs a Google sign-in.',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
