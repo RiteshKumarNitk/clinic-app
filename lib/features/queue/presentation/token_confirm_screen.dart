@@ -11,6 +11,7 @@ import '../../../app/theme.dart';
 import '../../../core/errors/api_exception.dart';
 import '../../../core/widgets/async_view.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/widgets/citycare.dart';
 import '../../appointments/presentation/booking_draft.dart';
 import '../../appointments/presentation/booking_widgets.dart';
 import '../../appointments/presentation/booking_for_picker.dart';
@@ -96,18 +97,18 @@ class _TokenConfirmScreenState extends State<TokenConfirmScreen> {
       body: AsyncView<TokenWindow>(
         load: () => context.read<DoctorRepository>().tokenWindow(d.doctor.id),
         errorMessage: "We couldn't check today's tokens.",
-        loading: const SkeletonList(count: 2),
+        loading: const CityCareLoading(count: 2),
         builder: (context, window, reload) => Column(
           children: [
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(ClinicSpacing.gutter),
+                padding: const EdgeInsets.all(CityCareSpacing.gutter),
                 children: [
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: ClinicSpacing.lg,
-                        vertical: ClinicSpacing.sm,
+                        horizontal: CityCareSpacing.lg,
+                        vertical: CityCareSpacing.sm,
                       ),
                       child: Column(
                         children: [
@@ -135,14 +136,14 @@ class _TokenConfirmScreenState extends State<TokenConfirmScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: ClinicSpacing.md),
+                  const SizedBox(height: CityCareSpacing.md),
                   Container(
-                    padding: const EdgeInsets.all(ClinicSpacing.md),
+                    padding: const EdgeInsets.all(CityCareSpacing.md),
                     decoration: BoxDecoration(
                       color: window.bookable
-                          ? ClinicColors.successSoft
-                          : ClinicColors.warningSoft,
-                      borderRadius: BorderRadius.circular(ClinicRadius.md),
+                          ? CityCareColors.successSoft
+                          : CityCareColors.warningSoft,
+                      borderRadius: BorderRadius.circular(CityCareRadius.md),
                     ),
                     child: Text(
                       window.bookable
@@ -152,27 +153,27 @@ class _TokenConfirmScreenState extends State<TokenConfirmScreen> {
                                 'Tokens are not available right now.',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: window.bookable
-                            ? ClinicColors.success
-                            : ClinicColors.warning,
+                            ? CityCareColors.success
+                            : CityCareColors.warning,
                       ),
                     ),
                   ),
                   if (window.bookable) ...[
-                    const SizedBox(height: ClinicSpacing.xl),
+                    const SizedBox(height: CityCareSpacing.xl),
                     BookingForPicker(
                       key: _for,
                       organizationId: d.organizationId,
                     ),
-                    const SizedBox(height: ClinicSpacing.xl),
+                    const SizedBox(height: CityCareSpacing.xl),
                     Text('Your details', style: theme.textTheme.titleMedium),
-                    const SizedBox(height: ClinicSpacing.md),
+                    const SizedBox(height: CityCareSpacing.md),
                     PatientDetailsForm(key: _patient),
                   ],
                   if (_error != null) ...[
-                    const SizedBox(height: ClinicSpacing.lg),
+                    const SizedBox(height: CityCareSpacing.lg),
                     Text(
                       _error!,
-                      style: const TextStyle(color: ClinicColors.danger),
+                      style: const TextStyle(color: CityCareColors.danger),
                     ),
                   ],
                 ],
@@ -180,22 +181,16 @@ class _TokenConfirmScreenState extends State<TokenConfirmScreen> {
             ),
             BottomAction(
               child: window.bookable
-                  ? FilledButton(
-                      onPressed: _submitting ? null : _book,
-                      child: _submitting
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.4,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text('Get my token'),
+                  ? CityCareButton(
+                      onPressed: _book,
+                      busy: _submitting,
+                      label: 'Get my token',
+                      icon: Icons.confirmation_number_outlined,
+                      accentRing: true,
                     )
-                  : OutlinedButton(
+                  : CityCareOutlinedButton(
                       onPressed: reload,
-                      child: const Text('Check again'),
+                      label: 'Check again',
                     ),
             ),
           ],

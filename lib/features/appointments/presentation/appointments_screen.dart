@@ -66,9 +66,9 @@ class AppointmentsScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('My appointments'),
           bottom: const TabBar(
-            labelColor: ClinicColors.primaryDark,
-            indicatorColor: ClinicColors.primary,
-            unselectedLabelColor: ClinicColors.inkMuted,
+            labelColor: CityCareColors.primaryDark,
+            indicatorColor: CityCareColors.primary,
+            unselectedLabelColor: CityCareColors.inkMuted,
             tabs: [
               Tab(text: 'Upcoming'),
               Tab(text: 'Past'),
@@ -86,7 +86,7 @@ class AppointmentsScreen extends StatelessWidget {
                 _List(
                   items: split.upcoming,
                   onRefresh: reload,
-                  empty: MessageView(
+                  empty: CityCareEmptyState(
                     icon: Icons.event_available_outlined,
                     title: "You don't have any upcoming appointments.",
                     message: 'Find a clinic and book a visit in a few taps.',
@@ -97,7 +97,7 @@ class AppointmentsScreen extends StatelessWidget {
                 _List(
                   items: split.past,
                   onRefresh: reload,
-                  empty: const MessageView(
+                  empty: const CityCareEmptyState(
                     icon: Icons.history_rounded,
                     title: 'No past appointments yet.',
                   ),
@@ -133,10 +133,10 @@ class _List extends StatelessWidget {
             )
           : ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(ClinicSpacing.gutter),
+              padding: const EdgeInsets.all(CityCareSpacing.gutter),
               itemCount: items.length,
               separatorBuilder: (_, _) =>
-                  const SizedBox(height: ClinicSpacing.md),
+                  const SizedBox(height: CityCareSpacing.md),
               itemBuilder: (_, i) => AppointmentCard(appointment: items[i]),
             ),
     );

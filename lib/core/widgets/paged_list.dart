@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme.dart';
 import '../errors/api_exception.dart';
 import '../network/paged.dart';
+import 'citycare.dart';
 import 'state_views.dart';
 
 /// Infinite-scrolling list over a server-paginated endpoint. Loads the next
@@ -84,12 +85,12 @@ class _PagedListState<T> extends State<PagedList<T>> {
   Widget build(BuildContext context) {
     if (_items.isEmpty) {
       if (_error != null) {
-        return ErrorView(
+        return CityCareErrorState(
           message: friendlyMessage(_error!, fallback: widget.errorMessage),
           onRetry: _refresh,
         );
       }
-      if (_loading || _hasMore) return const SkeletonList();
+      if (_loading || _hasMore) return const CityCareLoading();
       return RefreshIndicator(
         onRefresh: _refresh,
         child: ListView(
@@ -110,19 +111,22 @@ class _PagedListState<T> extends State<PagedList<T>> {
         controller: _scroll,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(
-          ClinicSpacing.gutter,
-          ClinicSpacing.sm,
-          ClinicSpacing.gutter,
-          ClinicSpacing.xxl,
+          CityCareSpacing.gutter,
+          CityCareSpacing.sm,
+          CityCareSpacing.gutter,
+          CityCareSpacing.xxl,
         ),
         itemCount: _items.length + offset + 1,
         separatorBuilder: (_, i) =>
-            SizedBox(height: i < offset ? 0 : ClinicSpacing.md),
+            SizedBox(height: i < offset ? 0 : CityCareSpacing.md),
         itemBuilder: (context, i) {
           if (header != null && i == 0) return header;
           final index = i - offset;
           if (index < _items.length) {
-            return widget.itemBuilder(context, _items[index]);
+            return FadeSlideIn(
+              index: index % 8,
+              child: widget.itemBuilder(context, _items[index]),
+            );
           }
           return _footer();
         },
@@ -142,7 +146,7 @@ class _PagedListState<T> extends State<PagedList<T>> {
     }
     if (_hasMore) {
       return const Padding(
-        padding: EdgeInsets.all(ClinicSpacing.lg),
+        padding: EdgeInsets.all(CityCareSpacing.lg),
         child: Center(
           child: SizedBox(
             width: 24,
@@ -152,6 +156,6 @@ class _PagedListState<T> extends State<PagedList<T>> {
         ),
       );
     }
-    return const SizedBox(height: ClinicSpacing.lg);
+    return const SizedBox(height: CityCareSpacing.lg);
   }
 }

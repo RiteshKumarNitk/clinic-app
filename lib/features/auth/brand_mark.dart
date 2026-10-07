@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme.dart';
+import '../../core/widgets/citycare.dart';
 
-/// The Clinic App mark: a rounded tile with a medical cross.
+/// The CityCare mark in a soft rounded tile (app-icon style).
 class BrandMark extends StatelessWidget {
   const BrandMark({super.key, this.size = 56, this.inverted = false});
 
   final double size;
+
+  /// White tile for gradient backgrounds.
   final bool inverted;
 
   @override
@@ -14,15 +16,12 @@ class BrandMark extends StatelessWidget {
     return Container(
       width: size,
       height: size,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: inverted ? Colors.white : ClinicColors.primary,
+        color: inverted ? Colors.white : const Color(0xFFE6F2FA),
         borderRadius: BorderRadius.circular(size * 0.3),
       ),
-      child: Icon(
-        Icons.local_hospital_rounded,
-        size: size * 0.56,
-        color: inverted ? ClinicColors.primary : Colors.white,
-      ),
+      child: CityCareLogo(size: size * 0.66),
     );
   }
 }

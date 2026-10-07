@@ -74,7 +74,7 @@ class _ClinicAppState extends State<ClinicApp> {
         Provider.value(value: d.notifications),
       ],
       child: MaterialApp.router(
-        title: 'Clinic',
+        title: 'CityCare',
         debugShowCheckedModeBanner: false,
         theme: buildClinicTheme(),
         routerConfig: _router,

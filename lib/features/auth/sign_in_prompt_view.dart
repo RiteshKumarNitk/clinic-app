@@ -43,7 +43,7 @@ class SignInPromptView extends StatelessWidget {
     final theme = Theme.of(context);
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(ClinicSpacing.xxl),
+        padding: const EdgeInsets.all(CityCareSpacing.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -51,25 +51,25 @@ class SignInPromptView extends StatelessWidget {
               width: 96,
               height: 96,
               decoration: BoxDecoration(
-                gradient: ClinicGradients.hero,
+                gradient: CityCareGradients.hero,
                 borderRadius: BorderRadius.circular(30),
-                boxShadow: ClinicShadows.soft,
+                boxShadow: CityCareShadows.soft,
               ),
               child: Icon(icon, color: Colors.white, size: 44),
             ),
-            const SizedBox(height: ClinicSpacing.xl),
+            const SizedBox(height: CityCareSpacing.xl),
             Text(
               title,
               textAlign: TextAlign.center,
               style: theme.textTheme.headlineSmall,
             ),
-            const SizedBox(height: ClinicSpacing.sm),
+            const SizedBox(height: CityCareSpacing.sm),
             Text(
               message,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15),
             ),
-            const SizedBox(height: ClinicSpacing.xl),
+            const SizedBox(height: CityCareSpacing.xl),
             GoogleButton(
               filled: true,
               busy: busy,

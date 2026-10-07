@@ -47,10 +47,10 @@ class _AsyncViewState<T> extends State<AsyncView<T>> {
       future: _future,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return widget.loading ?? const SkeletonList();
+          return widget.loading ?? const CityCareLoading();
         }
         if (snap.hasError) {
-          return ErrorView(
+          return CityCareErrorState(
             message: friendlyMessage(
               snap.error!,
               fallback: widget.errorMessage,

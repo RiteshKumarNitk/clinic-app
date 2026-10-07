@@ -1,4 +1,4 @@
-# Clinic App
+# CityCare
 
 Patient app for **finding clinics, booking appointments and tracking queue tokens**. It's a standalone Flutter project, and the only thing it shares with RemindMe is the backend. It imports none of RemindMe's code.
 

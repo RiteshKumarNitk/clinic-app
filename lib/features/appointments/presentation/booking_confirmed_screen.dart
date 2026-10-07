@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/utils/clinic_time.dart';
+import '../../../core/widgets/citycare.dart';
 import '../data/appointment_models.dart';
 import 'booking_draft.dart';
 import 'booking_widgets.dart';
@@ -32,9 +33,9 @@ class BookingConfirmedScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.all(ClinicSpacing.gutter),
+                  padding: const EdgeInsets.all(CityCareSpacing.gutter),
                   children: [
-                    const SizedBox(height: ClinicSpacing.xl),
+                    const SizedBox(height: CityCareSpacing.xl),
                     Center(
                       child: TweenAnimationBuilder<double>(
                         tween: Tween(begin: 0.6, end: 1),
@@ -46,35 +47,35 @@ class BookingConfirmedScreen extends StatelessWidget {
                           width: 88,
                           height: 88,
                           decoration: const BoxDecoration(
-                            color: ClinicColors.successSoft,
+                            color: CityCareColors.successSoft,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
                             Icons.check_rounded,
-                            color: ClinicColors.success,
+                            color: CityCareColors.success,
                             size: 48,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: ClinicSpacing.lg),
+                    const SizedBox(height: CityCareSpacing.lg),
                     Text(
                       'Appointment confirmed',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineSmall,
                     ),
-                    const SizedBox(height: ClinicSpacing.sm),
+                    const SizedBox(height: CityCareSpacing.sm),
                     Text(
                       'We\'ve saved it to your appointments.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium,
                     ),
-                    const SizedBox(height: ClinicSpacing.xl),
+                    const SizedBox(height: CityCareSpacing.xl),
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: ClinicSpacing.lg,
-                          vertical: ClinicSpacing.sm,
+                          horizontal: CityCareSpacing.lg,
+                          vertical: CityCareSpacing.sm,
                         ),
                         child: Column(
                           children: [
@@ -121,6 +122,11 @@ class BookingConfirmedScreen extends StatelessWidget {
                               label: 'Status',
                               value: a.status.label,
                             ),
+                            SummaryRow(
+                              icon: Icons.tag_rounded,
+                              label: 'Booking ID',
+                              value: a.id.split('-').first.toUpperCase(),
+                            ),
                           ],
                         ),
                       ),
@@ -132,19 +138,20 @@ class BookingConfirmedScreen extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    FilledButton(
+                    CityCareButton(
                       onPressed: () {
                         context.go(Routes.appointments);
                         context.push(
                           Routes.appointment(a.organizationId, a.id),
                         );
                       },
-                      child: const Text('View appointment'),
+                      label: 'View appointment',
+                      trailingArrow: true,
                     ),
-                    const SizedBox(height: ClinicSpacing.sm),
-                    TextButton(
+                    const SizedBox(height: CityCareSpacing.sm),
+                    CityCareOutlinedButton(
                       onPressed: () => context.go(Routes.home),
-                      child: const Text('Back to home'),
+                      label: 'Go home',
                     ),
                   ],
                 ),

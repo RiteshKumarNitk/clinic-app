@@ -35,7 +35,7 @@ class _SkeletonState extends State<Skeleton>
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          color: ClinicColors.skeleton,
+          color: CityCareColors.skeleton,
           borderRadius: BorderRadius.circular(widget.radius),
         ),
       ),
@@ -44,8 +44,8 @@ class _SkeletonState extends State<Skeleton>
 }
 
 /// A card-shaped skeleton: avatar + lines. Used by every list while loading.
-class SkeletonCard extends StatelessWidget {
-  const SkeletonCard({super.key, this.lines = 2, this.avatar = true});
+class CityCareSkeletonCard extends StatelessWidget {
+  const CityCareSkeletonCard({super.key, this.lines = 2, this.avatar = true});
 
   final int lines;
   final bool avatar;
@@ -54,13 +54,13 @@ class SkeletonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(ClinicSpacing.lg),
+        padding: const EdgeInsets.all(CityCareSpacing.lg),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (avatar) ...[
               const Skeleton(width: 52, height: 52, radius: 14),
-              const SizedBox(width: ClinicSpacing.md),
+              const SizedBox(width: CityCareSpacing.md),
             ],
             Expanded(
               child: Column(
@@ -81,8 +81,8 @@ class SkeletonCard extends StatelessWidget {
   }
 }
 
-class SkeletonList extends StatelessWidget {
-  const SkeletonList({super.key, this.count = 4, this.lines = 2});
+class CityCareLoading extends StatelessWidget {
+  const CityCareLoading({super.key, this.count = 4, this.lines = 2});
 
   final int count;
   final int lines;
@@ -90,19 +90,19 @@ class SkeletonList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      padding: const EdgeInsets.all(ClinicSpacing.gutter),
+      padding: const EdgeInsets.all(CityCareSpacing.gutter),
       physics: const NeverScrollableScrollPhysics(),
       itemCount: count,
-      separatorBuilder: (_, _) => const SizedBox(height: ClinicSpacing.md),
-      itemBuilder: (_, _) => SkeletonCard(lines: lines),
+      separatorBuilder: (_, _) => const SizedBox(height: CityCareSpacing.md),
+      itemBuilder: (_, _) => CityCareSkeletonCard(lines: lines),
     );
   }
 }
 
 /// Centered message with an icon and an optional action. Shared by error and
 /// empty states so both feel like part of the product, not a crash.
-class MessageView extends StatelessWidget {
-  const MessageView({
+class CityCareEmptyState extends StatelessWidget {
+  const CityCareEmptyState({
     super.key,
     required this.icon,
     required this.title,
@@ -122,13 +122,16 @@ class MessageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (bg, fg) = switch (tone) {
-      MessageTone.neutral => (ClinicColors.primarySoft, ClinicColors.primary),
-      MessageTone.problem => (ClinicColors.dangerSoft, ClinicColors.danger),
+      MessageTone.neutral => (
+        CityCareColors.primarySoft,
+        CityCareColors.primary,
+      ),
+      MessageTone.problem => (CityCareColors.dangerSoft, CityCareColors.danger),
     };
     final theme = Theme.of(context);
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(ClinicSpacing.xxl),
+        padding: const EdgeInsets.all(CityCareSpacing.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -138,14 +141,14 @@ class MessageView extends StatelessWidget {
               decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
               child: Icon(icon, color: fg, size: 34),
             ),
-            const SizedBox(height: ClinicSpacing.lg),
+            const SizedBox(height: CityCareSpacing.lg),
             Text(
               title,
               textAlign: TextAlign.center,
               style: theme.textTheme.titleMedium,
             ),
             if (message != null) ...[
-              const SizedBox(height: ClinicSpacing.sm),
+              const SizedBox(height: CityCareSpacing.sm),
               Text(
                 message!,
                 textAlign: TextAlign.center,
@@ -153,7 +156,7 @@ class MessageView extends StatelessWidget {
               ),
             ],
             if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: ClinicSpacing.xl),
+              const SizedBox(height: CityCareSpacing.xl),
               SizedBox(
                 width: 220,
                 child: FilledButton(
@@ -171,14 +174,18 @@ class MessageView extends StatelessWidget {
 
 enum MessageTone { neutral, problem }
 
-class ErrorView extends StatelessWidget {
-  const ErrorView({super.key, required this.message, required this.onRetry});
+class CityCareErrorState extends StatelessWidget {
+  const CityCareErrorState({
+    super.key,
+    required this.message,
+    required this.onRetry,
+  });
 
   final String message;
   final VoidCallback onRetry;
 
   @override
-  Widget build(BuildContext context) => MessageView(
+  Widget build(BuildContext context) => CityCareEmptyState(
     icon: Icons.cloud_off_rounded,
     title: message,
     actionLabel: 'Try again',
@@ -188,8 +195,8 @@ class ErrorView extends StatelessWidget {
 }
 
 /// Small coloured pill for statuses (verified, confirmed, waiting…).
-class StatusBadge extends StatelessWidget {
-  const StatusBadge({
+class CityCareStatusBadge extends StatelessWidget {
+  const CityCareStatusBadge({
     super.key,
     required this.label,
     required this.color,
@@ -234,8 +241,8 @@ class StatusBadge extends StatelessWidget {
 
 /// Network image with an initials / icon fallback — clinics and doctors often
 /// have no photo yet.
-class EntityAvatar extends StatelessWidget {
-  const EntityAvatar({
+class CityCareAvatar extends StatelessWidget {
+  const CityCareAvatar({
     super.key,
     required this.label,
     this.imageUrl,
@@ -260,15 +267,15 @@ class EntityAvatar extends StatelessWidget {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: ClinicColors.primarySoft,
+        color: CityCareColors.primarySoft,
         borderRadius: radius,
       ),
       child: icon != null
-          ? Icon(icon, color: ClinicColors.primary, size: size * 0.5)
+          ? Icon(icon, color: CityCareColors.primary, size: size * 0.5)
           : Text(
               _initials(label),
               style: TextStyle(
-                color: ClinicColors.primaryDark,
+                color: CityCareColors.primaryDark,
                 fontWeight: FontWeight.w700,
                 fontSize: size * 0.34,
               ),
@@ -301,8 +308,8 @@ class EntityAvatar extends StatelessWidget {
 }
 
 /// Section header used on Home and details screens.
-class SectionHeader extends StatelessWidget {
-  const SectionHeader({
+class CityCareSectionHeader extends StatelessWidget {
+  const CityCareSectionHeader({
     super.key,
     required this.title,
     this.actionLabel,
@@ -316,7 +323,7 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: ClinicSpacing.sm),
+      padding: const EdgeInsets.only(bottom: CityCareSpacing.sm),
       child: Row(
         children: [
           Expanded(
@@ -344,7 +351,7 @@ class InfoRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: ClinicColors.primary),
+          Icon(icon, size: 18, color: CityCareColors.primary),
           const SizedBox(width: 10),
           Expanded(
             child: Text(text, style: Theme.of(context).textTheme.bodyLarge),

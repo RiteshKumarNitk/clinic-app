@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../app/theme.dart';
-import 'brand_mark.dart';
+import '../../core/widgets/citycare.dart';
 
 /// Branded splash while the saved session is restored (held for a moment so
 /// it never flashes). The router replaces it when restoration settles.
@@ -17,12 +17,12 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1000),
+    duration: const Duration(milliseconds: 1100),
   )..forward();
 
   late final _mark = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0, 0.65, curve: Curves.easeOutBack),
+    curve: const Interval(0, 0.6, curve: Curves.easeOutBack),
   );
   late final _text = CurvedAnimation(
     parent: _c,
@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen>
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         body: DecoratedBox(
-          decoration: const BoxDecoration(gradient: ClinicGradients.hero),
+          decoration: const BoxDecoration(gradient: CityCareGradients.hero),
           child: Stack(
             children: [
               const Positioned(top: -90, right: -70, child: _Ring(size: 260)),
@@ -57,14 +57,18 @@ class _SplashScreenState extends State<SplashScreen>
                     ScaleTransition(
                       scale: _mark,
                       child: Container(
+                        width: 108,
+                        height: 108,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: ClinicShadows.lifted,
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(34),
+                          boxShadow: CityCareShadows.lifted,
                         ),
-                        child: const BrandMark(size: 96, inverted: true),
+                        child: const CityCareLogo(size: 70),
                       ),
                     ),
-                    const SizedBox(height: ClinicSpacing.xl),
+                    const SizedBox(height: CityCareSpacing.xl),
                     FadeTransition(
                       opacity: _text,
                       child: SlideTransition(
@@ -72,22 +76,28 @@ class _SplashScreenState extends State<SplashScreen>
                           begin: const Offset(0, 0.4),
                           end: Offset.zero,
                         ).animate(_text),
-                        child: const Column(
+                        child: Column(
                           children: [
-                            Text(
-                              'Clinic',
+                            Text.rich(
+                              const TextSpan(
+                                children: [
+                                  TextSpan(text: 'City'),
+                                  TextSpan(
+                                    text: 'Care',
+                                    style: TextStyle(
+                                      color: CityCareColors.lime,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              style: Theme.of(context).textTheme.displaySmall
+                                  ?.copyWith(color: Colors.white),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Better healthcare for your city',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 34,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.8,
-                              ),
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              'Find & book trusted healthcare',
-                              style: TextStyle(
-                                color: Colors.white70,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -110,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
                       borderRadius: BorderRadius.circular(4),
                       child: const LinearProgressIndicator(
                         minHeight: 4,
-                        color: Colors.white,
+                        color: CityCareColors.lime,
                         backgroundColor: Color(0x40FFFFFF),
                       ),
                     ),
@@ -138,7 +148,7 @@ class _Ring extends StatelessWidget {
     decoration: BoxDecoration(
       shape: BoxShape.circle,
       border: Border.all(
-        color: Colors.white.withValues(alpha: 0.10),
+        color: Colors.white.withValues(alpha: 0.12),
         width: 28,
       ),
     ),

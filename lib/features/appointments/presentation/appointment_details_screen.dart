@@ -10,6 +10,7 @@ import '../../../core/utils/clinic_time.dart';
 import '../../../core/widgets/async_view.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../core/utils/external_actions.dart';
+import '../../../core/widgets/citycare.dart';
 import '../../clinics/data/clinic_models.dart';
 import '../../clinics/data/clinic_repository.dart';
 import '../../doctors/data/doctor_repository.dart';
@@ -93,10 +94,10 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
       showDragHandle: true,
       builder: (ctx) => Padding(
         padding: const EdgeInsets.fromLTRB(
-          ClinicSpacing.gutter,
+          CityCareSpacing.gutter,
           0,
-          ClinicSpacing.gutter,
-          ClinicSpacing.xl,
+          CityCareSpacing.gutter,
+          CityCareSpacing.xl,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -106,21 +107,21 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
               'Cancel this appointment?',
               style: Theme.of(ctx).textTheme.titleLarge,
             ),
-            const SizedBox(height: ClinicSpacing.sm),
+            const SizedBox(height: CityCareSpacing.sm),
             Text(
               '${a.doctorName ?? 'Your visit'} · '
               '${ClinicTime.date(a.scheduledStart, a.timezone)}',
               style: Theme.of(ctx).textTheme.bodyMedium,
             ),
-            const SizedBox(height: ClinicSpacing.xl),
+            const SizedBox(height: CityCareSpacing.xl),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: ClinicColors.danger,
+                backgroundColor: CityCareColors.danger,
               ),
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Cancel appointment'),
             ),
-            const SizedBox(height: ClinicSpacing.sm),
+            const SizedBox(height: CityCareSpacing.sm),
             OutlinedButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Keep it'),
@@ -167,14 +168,14 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
         key: ValueKey(_reloadKey),
         load: _load,
         errorMessage: "We couldn't load this appointment.",
-        loading: const SkeletonList(count: 2, lines: 4),
+        loading: const CityCareLoading(count: 2, lines: 4),
         builder: (context, a, reload) => Column(
           children: [
             Expanded(
               child: RefreshIndicator(
                 onRefresh: reload,
                 child: ListView(
-                  padding: const EdgeInsets.all(ClinicSpacing.gutter),
+                  padding: const EdgeInsets.all(CityCareSpacing.gutter),
                   children: [_Body(appointment: a)],
                 ),
               ),
@@ -185,14 +186,14 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (a.hasQueue && a.status.isActive) ...[
-                      FilledButton.icon(
+                      CityCareButton(
                         onPressed: () => context.push(
                           '${Routes.queue(a.id)}?org=${a.organizationId}',
                         ),
-                        icon: const Icon(Icons.confirmation_number_outlined),
-                        label: const Text('View live queue'),
+                        icon: Icons.confirmation_number_outlined,
+                        label: 'View live queue',
                       ),
-                      const SizedBox(height: ClinicSpacing.sm),
+                      const SizedBox(height: CityCareSpacing.sm),
                     ],
                     if (!a.isToken) ...[
                       OutlinedButton.icon(
@@ -200,11 +201,11 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                         icon: const Icon(Icons.update_rounded),
                         label: const Text('Change time'),
                       ),
-                      const SizedBox(height: ClinicSpacing.xs),
+                      const SizedBox(height: CityCareSpacing.xs),
                     ],
                     TextButton(
                       style: TextButton.styleFrom(
-                        foregroundColor: ClinicColors.danger,
+                        foregroundColor: CityCareColors.danger,
                       ),
                       onPressed: () => _cancel(a),
                       child: const Text('Cancel appointment'),
@@ -252,13 +253,13 @@ class _Body extends StatelessWidget {
           const SizedBox(height: 4),
           Text(a.clinicName!, style: theme.textTheme.bodyLarge),
         ],
-        const SizedBox(height: ClinicSpacing.lg),
+        const SizedBox(height: CityCareSpacing.lg),
         if (a.hasQueue && a.tokenNumber != null) ...[
           Container(
-            padding: const EdgeInsets.all(ClinicSpacing.lg),
+            padding: const EdgeInsets.all(CityCareSpacing.lg),
             decoration: BoxDecoration(
-              color: ClinicColors.primary,
-              borderRadius: BorderRadius.circular(ClinicRadius.lg),
+              color: CityCareColors.primary,
+              borderRadius: BorderRadius.circular(CityCareRadius.lg),
             ),
             child: Row(
               children: [
@@ -266,7 +267,7 @@ class _Body extends StatelessWidget {
                   Icons.confirmation_number_rounded,
                   color: Colors.white,
                 ),
-                const SizedBox(width: ClinicSpacing.md),
+                const SizedBox(width: CityCareSpacing.md),
                 const Expanded(
                   child: Text(
                     'Your token',
@@ -287,13 +288,13 @@ class _Body extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: ClinicSpacing.lg),
+          const SizedBox(height: CityCareSpacing.lg),
         ],
         Card(
           child: Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: ClinicSpacing.lg,
-              vertical: ClinicSpacing.sm,
+              horizontal: CityCareSpacing.lg,
+              vertical: CityCareSpacing.sm,
             ),
             child: Column(
               children: [
@@ -348,14 +349,14 @@ class _Body extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: ClinicSpacing.md),
+        const SizedBox(height: CityCareSpacing.md),
         _VisitActions(appointment: a),
         if (a.status == AppointmentStatus.completed) ...[
-          const SizedBox(height: ClinicSpacing.lg),
+          const SizedBox(height: CityCareSpacing.lg),
           _VisitSummarySection(appointment: a),
         ],
         if (a.clinicSlug != null) ...[
-          const SizedBox(height: ClinicSpacing.md),
+          const SizedBox(height: CityCareSpacing.md),
           OutlinedButton.icon(
             onPressed: () => context.push(Routes.clinic(a.clinicSlug!)),
             icon: const Icon(Icons.local_hospital_outlined),
@@ -429,7 +430,7 @@ class _VisitActionsState extends State<_VisitActions> {
                 a.appointmentTypeName,
                 if (a.isToken && a.tokenNumber != null)
                   'Token #${a.tokenNumber}',
-                'Booked with Clinic',
+                'Booked with CityCare',
               ].whereType<String>().join(', '),
               location: place.isEmpty ? null : place,
             ),
@@ -482,7 +483,7 @@ class _VisitSummarySectionState extends State<_VisitSummarySection> {
       future: _summary,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const SkeletonCard(avatar: false, lines: 3);
+          return const CityCareSkeletonCard(avatar: false, lines: 3);
         }
         final summary = snap.data;
         if (summary == null || summary.isEmpty) {
@@ -491,7 +492,7 @@ class _VisitSummarySectionState extends State<_VisitSummarySection> {
         Widget field(String label, String? value) => value == null
             ? const SizedBox.shrink()
             : Padding(
-                padding: const EdgeInsets.only(top: ClinicSpacing.sm),
+                padding: const EdgeInsets.only(top: CityCareSpacing.sm),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -504,10 +505,10 @@ class _VisitSummarySectionState extends State<_VisitSummarySection> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SectionHeader(title: 'Visit summary'),
+            const CityCareSectionHeader(title: 'Visit summary'),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(ClinicSpacing.lg),
+                padding: const EdgeInsets.all(CityCareSpacing.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -528,7 +529,7 @@ class _VisitSummarySectionState extends State<_VisitSummarySection> {
               ),
             ),
             for (final p in summary.prescriptions) ...[
-              const SizedBox(height: ClinicSpacing.md),
+              const SizedBox(height: CityCareSpacing.md),
               PrescriptionCard(prescription: p),
             ],
           ],

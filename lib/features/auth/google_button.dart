@@ -21,17 +21,17 @@ class GoogleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = filled ? ClinicColors.ink : Colors.white;
-    final fg = filled ? Colors.white : ClinicColors.ink;
+    final bg = filled ? CityCareColors.ink : Colors.white;
+    final fg = filled ? Colors.white : CityCareColors.ink;
     return SizedBox(
       height: 56,
       width: double.infinity,
       child: Material(
         color: bg,
-        borderRadius: BorderRadius.circular(ClinicRadius.md),
+        borderRadius: BorderRadius.circular(CityCareRadius.md),
         elevation: 0,
         child: InkWell(
-          borderRadius: BorderRadius.circular(ClinicRadius.md),
+          borderRadius: BorderRadius.circular(CityCareRadius.md),
           onTap: busy ? null : onPressed,
           child: Center(
             child: busy

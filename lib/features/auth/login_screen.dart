@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -6,8 +8,8 @@ import '../../app/theme.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/auth/google_auth_gateway.dart';
 import '../../core/errors/api_exception.dart';
+import '../../core/widgets/citycare.dart';
 import '../../shared/exit_confirm_scope.dart';
-import 'brand_mark.dart';
 import 'google_button.dart';
 
 /// Continue with Google, or browse as a guest. There is no email/password.
@@ -44,69 +46,57 @@ class LoginScreen extends StatelessWidget {
 
     return ExitConfirmScope(
       child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
+        value: SystemUiOverlayStyle.dark,
         child: Scaffold(
-          backgroundColor: ClinicColors.surface,
-          body: LayoutBuilder(
-            builder: (context, box) => SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: box.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const _Hero(),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            24,
-                            28,
-                            24,
-                            24 + MediaQuery.paddingOf(context).bottom,
+          body: CityCareBackground(
+            child: SafeArea(
+              child: LayoutBuilder(
+                builder: (context, box) => SingleChildScrollView(
+                  padding: const EdgeInsets.all(CityCareSpacing.lg),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: box.maxHeight - CityCareSpacing.lg * 2,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const _HeroPanel(),
+                          const Spacer(),
+                          const SizedBox(height: 48),
+                          Text(
+                            'Sign in to book visits and follow your queue '
+                            'live, or look around first.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontSize: 14.5,
+                            ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                'Welcome',
-                                style: theme.textTheme.headlineMedium,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Sign in to book visits and follow your queue '
-                                'live, or look around first.',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontSize: 15,
-                                ),
-                              ),
-                              const Spacer(),
-                              const SizedBox(height: ClinicSpacing.xl),
-                              GoogleButton(
-                                filled: true,
-                                busy: busy,
-                                onPressed: () => _signIn(context),
-                              ),
-                              const SizedBox(height: ClinicSpacing.md),
-                              OutlinedButton(
-                                onPressed: busy
-                                    ? null
-                                    : context
-                                          .read<AuthController>()
-                                          .continueAsGuest,
-                                child: const Text('Continue as guest'),
-                              ),
-                              const SizedBox(height: ClinicSpacing.lg),
-                              Text(
-                                'Guests can browse clinics and doctors. '
-                                'Booking needs a Google sign-in.',
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodySmall,
-                              ),
-                            ],
+                          const SizedBox(height: CityCareSpacing.lg),
+                          GoogleButton(
+                            filled: true,
+                            busy: busy,
+                            onPressed: () => _signIn(context),
                           ),
-                        ),
+                          const SizedBox(height: CityCareSpacing.md),
+                          CityCareOutlinedButton(
+                            label: 'Continue as guest',
+                            onPressed: busy
+                                ? null
+                                : context
+                                      .read<AuthController>()
+                                      .continueAsGuest,
+                          ),
+                          const SizedBox(height: CityCareSpacing.md),
+                          Text(
+                            'Guests can browse clinics and doctors. '
+                            'Booking needs a Google sign-in.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -118,59 +108,60 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-class _Hero extends StatelessWidget {
-  const _Hero();
+/// Rounded blue panel with oversized type and a lime "book" badge.
+class _HeroPanel extends StatelessWidget {
+  const _HeroPanel();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: ClinicGradients.hero,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+    final narrow = MediaQuery.sizeOf(context).width < 360;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(24, 22, 24, 72),
+          decoration: BoxDecoration(
+            gradient: CityCareGradients.hero,
+            borderRadius: BorderRadius.circular(CityCareRadius.xl + 4),
+            boxShadow: CityCareShadows.soft,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
-                children: [
-                  BrandMark(size: 40, inverted: true),
-                  SizedBox(width: 10),
-                  Text(
-                    'Clinic',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Find and book\ntrusted healthcare',
+              const CityCareWordmark(size: 32, onDark: true),
+              const SizedBox(height: 36),
+              Text(
+                'Better\nhealthcare\nfor your city.',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 32,
-                  height: 1.15,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.8,
+                  fontSize: narrow ? 34 : 42,
+                  height: 1.06,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -1.6,
                 ),
               ),
-              const SizedBox(height: 24),
-              Wrap(
+              const SizedBox(height: 18),
+              const Text(
+                'Discover trusted clinics and doctors, book appointments and '
+                'follow live queues, all in one place.',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 22),
+              const Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: const [
-                  _Chip(icon: Icons.verified_rounded, label: 'Real clinics'),
-                  _Chip(
+                children: [
+                  _Pill(icon: Icons.local_hospital_rounded, label: 'Clinics'),
+                  _Pill(
                     icon: Icons.event_available_rounded,
                     label: 'Live slots',
                   ),
-                  _Chip(
+                  _Pill(
                     icon: Icons.confirmation_number_rounded,
                     label: 'Queue tokens',
                   ),
@@ -179,13 +170,14 @@ class _Hero extends StatelessWidget {
             ],
           ),
         ),
-      ),
+        const Positioned(right: 18, bottom: -36, child: _BookBadge()),
+      ],
     );
   }
 }
 
-class _Chip extends StatelessWidget {
-  const _Chip({required this.icon, required this.label});
+class _Pill extends StatelessWidget {
+  const _Pill({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
@@ -193,27 +185,102 @@ class _Chip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(CityCareRadius.pill),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.white),
+          Icon(icon, size: 15, color: Colors.white),
           const SizedBox(width: 6),
           Text(
             label,
             style: const TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              fontSize: 12.5,
             ),
           ),
         ],
       ),
     );
   }
+}
+
+/// Circular lime badge with text around an arrow — the brand's "book"
+/// sticker. Decorative only.
+class _BookBadge extends StatelessWidget {
+  const _BookBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: Container(
+        width: 104,
+        height: 104,
+        decoration: BoxDecoration(
+          color: CityCareColors.lime,
+          shape: BoxShape.circle,
+          border: Border.all(color: CityCareColors.background, width: 5),
+          boxShadow: CityCareShadows.soft,
+        ),
+        child: const Stack(
+          alignment: Alignment.center,
+          children: [
+            CustomPaint(
+              size: Size(88, 88),
+              painter: _CircleTextPainter('BOOK A VISIT • FIND CARE • '),
+            ),
+            Icon(
+              Icons.arrow_outward_rounded,
+              color: CityCareColors.navy,
+              size: 30,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CircleTextPainter extends CustomPainter {
+  const _CircleTextPainter(this.text);
+
+  final String text;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final radius = size.width / 2 - 8;
+    final center = size.center(Offset.zero);
+    final step = 2 * math.pi / text.length;
+    for (var i = 0; i < text.length; i++) {
+      final tp = TextPainter(
+        text: TextSpan(
+          text: text[i],
+          style: const TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 9,
+            fontWeight: FontWeight.w600,
+            color: CityCareColors.navy,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final angle = -math.pi / 2 + i * step;
+      canvas.save();
+      canvas.translate(
+        center.dx + radius * math.cos(angle),
+        center.dy + radius * math.sin(angle),
+      );
+      canvas.rotate(angle + math.pi / 2);
+      tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CircleTextPainter old) => old.text != text;
 }

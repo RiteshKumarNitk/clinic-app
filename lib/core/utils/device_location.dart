@@ -31,7 +31,7 @@ class DeviceLocation {
     }
     if (permission == LocationPermission.deniedForever) {
       throw const LocationUnavailable(
-        'Location is blocked for Clinic. Enable it in Settings.',
+        'Location is blocked for CityCare. Enable it in Settings.',
         canOpenSettings: true,
       );
     }

@@ -65,7 +65,7 @@ class PatientDetailsFormState extends State<PatientDetailsForm> {
                   validator: required,
                 ),
               ),
-              const SizedBox(width: ClinicSpacing.md),
+              const SizedBox(width: CityCareSpacing.md),
               Expanded(
                 child: TextFormField(
                   controller: _last,
@@ -76,7 +76,7 @@ class PatientDetailsFormState extends State<PatientDetailsForm> {
               ),
             ],
           ),
-          const SizedBox(height: ClinicSpacing.md),
+          const SizedBox(height: CityCareSpacing.md),
           TextFormField(
             controller: _phone,
             keyboardType: TextInputType.phone,

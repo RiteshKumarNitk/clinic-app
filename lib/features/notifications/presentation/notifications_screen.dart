@@ -45,7 +45,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   children: const [
                     SizedBox(
                       height: 480,
-                      child: MessageView(
+                      child: CityCareEmptyState(
                         icon: Icons.notifications_none_rounded,
                         title: "You're all caught up",
                         message:
@@ -56,10 +56,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ],
                 )
               : ListView.separated(
-                  padding: const EdgeInsets.all(ClinicSpacing.gutter),
+                  padding: const EdgeInsets.all(CityCareSpacing.gutter),
                   itemCount: inbox.items.length,
                   separatorBuilder: (_, _) =>
-                      const SizedBox(height: ClinicSpacing.sm),
+                      const SizedBox(height: CityCareSpacing.sm),
                   itemBuilder: (_, i) => _Tile(item: inbox.items[i]),
                 ),
         ),
@@ -92,7 +92,7 @@ class _Tile extends StatelessWidget {
         ? DateFormat('h:mm a').format(local)
         : DateFormat('d MMM, h:mm a').format(local);
     return Card(
-      color: item.read ? ClinicColors.surface : ClinicColors.primarySoft,
+      color: item.read ? CityCareColors.surface : CityCareColors.primarySoft,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: item.appointmentId == null
@@ -101,7 +101,7 @@ class _Tile extends StatelessWidget {
                 Routes.appointment(item.organizationId, item.appointmentId!),
               ),
         child: Padding(
-          padding: const EdgeInsets.all(ClinicSpacing.lg),
+          padding: const EdgeInsets.all(CityCareSpacing.lg),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -110,13 +110,13 @@ class _Tile extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   color: item.read
-                      ? ClinicColors.primarySoft
-                      : ClinicColors.surface,
-                  borderRadius: BorderRadius.circular(ClinicRadius.sm),
+                      ? CityCareColors.primarySoft
+                      : CityCareColors.surface,
+                  borderRadius: BorderRadius.circular(CityCareRadius.sm),
                 ),
-                child: Icon(_icon, color: ClinicColors.primary, size: 22),
+                child: Icon(_icon, color: CityCareColors.primary, size: 22),
               ),
-              const SizedBox(width: ClinicSpacing.md),
+              const SizedBox(width: CityCareSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +136,7 @@ class _Tile extends StatelessWidget {
                   height: 9,
                   margin: const EdgeInsets.only(top: 6),
                   decoration: const BoxDecoration(
-                    color: ClinicColors.primary,
+                    color: CityCareColors.primary,
                     shape: BoxShape.circle,
                   ),
                 ),

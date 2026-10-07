@@ -30,16 +30,16 @@ class DoctorCard extends StatelessWidget {
       child: InkWell(
         onTap: () => context.push(Routes.doctor(doctor.id)),
         child: Padding(
-          padding: const EdgeInsets.all(ClinicSpacing.lg),
+          padding: const EdgeInsets.all(CityCareSpacing.lg),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              EntityAvatar(
+              CityCareAvatar(
                 label: doctor.displayName,
                 imageUrl: doctor.photoUrl,
                 circle: true,
               ),
-              const SizedBox(width: ClinicSpacing.md),
+              const SizedBox(width: CityCareSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +53,7 @@ class DoctorCard extends StatelessWidget {
                       Text(
                         doctor.specialty!,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: ClinicColors.primaryDark,
+                          color: CityCareColors.primaryDark,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -78,22 +78,22 @@ class DoctorCard extends StatelessWidget {
                     ],
                     if (doctor.bookingMode.offersTokens) ...[
                       const SizedBox(height: 8),
-                      const StatusBadge(
+                      const CityCareStatusBadge(
                         label: 'Same-day tokens',
                         icon: Icons.confirmation_number_outlined,
-                        color: ClinicColors.warning,
-                        background: ClinicColors.warningSoft,
+                        color: CityCareColors.warning,
+                        background: CityCareColors.warningSoft,
                       ),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(width: ClinicSpacing.sm),
+              const SizedBox(width: CityCareSpacing.sm),
               const Padding(
                 padding: EdgeInsets.only(top: 14),
                 child: Icon(
                   Icons.chevron_right_rounded,
-                  color: ClinicColors.inkFaint,
+                  color: CityCareColors.inkFaint,
                 ),
               ),
             ],

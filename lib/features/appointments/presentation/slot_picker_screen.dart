@@ -9,6 +9,7 @@ import '../../../app/theme.dart';
 import '../../../core/errors/api_exception.dart';
 import '../../../core/utils/clinic_time.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/widgets/citycare.dart';
 import '../data/appointment_models.dart';
 import '../data/appointment_repository.dart';
 import 'booking_draft.dart';
@@ -140,7 +141,7 @@ class _SlotPickerScreenState extends State<SlotPickerScreen> {
             children: [
               BookingHeader(
                 draft: widget.draft,
-                step: widget.draft.isReschedule ? 0 : 2,
+                step: widget.draft.isReschedule ? 0 : (_slot == null ? 2 : 3),
                 title: widget.draft.isReschedule
                     ? 'Choose a new time'
                     : 'Pick a date & time',
@@ -154,19 +155,19 @@ class _SlotPickerScreenState extends State<SlotPickerScreen> {
                   _load();
                 },
               ),
-              const SizedBox(height: ClinicSpacing.md),
+              const SizedBox(height: CityCareSpacing.md),
               const Divider(),
               Expanded(child: _slots(snap)),
               BottomAction(
-                child: FilledButton(
-                  onPressed: _slot != null && day != null && !_saving
+                child: CityCareButton(
+                  onPressed: _slot != null && day != null
                       ? () => _continue(day)
                       : null,
-                  child: Text(
-                    _slot == null || day == null
-                        ? 'Select a time'
-                        : 'Continue · ${ClinicTime.time(_slot!.start, day.timezone)}',
-                  ),
+                  busy: _saving,
+                  trailingArrow: _slot != null,
+                  label: _slot == null || day == null
+                      ? 'Select a time'
+                      : 'Continue · ${ClinicTime.time(_slot!.start, day.timezone)}',
                 ),
               ),
             ],
@@ -181,7 +182,7 @@ class _SlotPickerScreenState extends State<SlotPickerScreen> {
       return const _SlotSkeleton();
     }
     if (snap.hasError) {
-      return ErrorView(
+      return CityCareErrorState(
         message: friendlyMessage(
           snap.error!,
           fallback: "We couldn't load available times.",
@@ -192,7 +193,7 @@ class _SlotPickerScreenState extends State<SlotPickerScreen> {
     final day = snap.data!;
     if (day.slots.isEmpty) {
       final leadHours = (day.bookingLeadTimeMinutes / 60).ceil();
-      return MessageView(
+      return CityCareEmptyState(
         icon: Icons.event_busy_outlined,
         title: 'No appointments are available for this date.',
         message: day.slotsHiddenByLeadTime > 0
@@ -222,11 +223,11 @@ class _SlotPickerScreenState extends State<SlotPickerScreen> {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(ClinicSpacing.gutter),
+      padding: const EdgeInsets.all(CityCareSpacing.gutter),
       children: [
         for (final entry in groups.entries) ...[
           Text(entry.key, style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: ClinicSpacing.sm),
+          const SizedBox(height: CityCareSpacing.sm),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -239,13 +240,13 @@ class _SlotPickerScreenState extends State<SlotPickerScreen> {
                   labelStyle: TextStyle(
                     fontWeight: FontWeight.w600,
                     color: _slot?.start == s.start
-                        ? ClinicColors.primaryDark
-                        : ClinicColors.ink,
+                        ? CityCareColors.primaryDark
+                        : CityCareColors.ink,
                   ),
                   side: BorderSide(
                     color: _slot?.start == s.start
-                        ? ClinicColors.primary
-                        : ClinicColors.border,
+                        ? CityCareColors.primary
+                        : CityCareColors.border,
                   ),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -255,7 +256,7 @@ class _SlotPickerScreenState extends State<SlotPickerScreen> {
                 ),
             ],
           ),
-          const SizedBox(height: ClinicSpacing.lg),
+          const SizedBox(height: CityCareSpacing.lg),
         ],
         Text(
           'Times shown in the clinic\'s local time · ${day.durationMinutes} min visit',
@@ -285,7 +286,7 @@ class _DateStrip extends StatelessWidget {
       height: 84,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: ClinicSpacing.gutter),
+        padding: const EdgeInsets.symmetric(horizontal: CityCareSpacing.gutter),
         itemCount: count,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
@@ -296,20 +297,20 @@ class _DateStrip extends StatelessWidget {
             button: true,
             label: DateFormat('EEEE d MMMM').format(d),
             child: InkWell(
-              borderRadius: BorderRadius.circular(ClinicRadius.md),
+              borderRadius: BorderRadius.circular(CityCareRadius.md),
               onTap: () => onSelected(d),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 width: 58,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? ClinicColors.primary
-                      : ClinicColors.surface,
-                  borderRadius: BorderRadius.circular(ClinicRadius.md),
+                      ? CityCareColors.primary
+                      : CityCareColors.surface,
+                  borderRadius: BorderRadius.circular(CityCareRadius.md),
                   border: Border.all(
                     color: isSelected
-                        ? ClinicColors.primary
-                        : ClinicColors.border,
+                        ? CityCareColors.primary
+                        : CityCareColors.border,
                   ),
                 ),
                 child: FittedBox(
@@ -324,7 +325,7 @@ class _DateStrip extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           color: isSelected
                               ? Colors.white70
-                              : ClinicColors.inkMuted,
+                              : CityCareColors.inkMuted,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -333,7 +334,7 @@ class _DateStrip extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          color: isSelected ? Colors.white : ClinicColors.ink,
+                          color: isSelected ? Colors.white : CityCareColors.ink,
                         ),
                       ),
                       Text(
@@ -342,7 +343,7 @@ class _DateStrip extends StatelessWidget {
                           fontSize: 11,
                           color: isSelected
                               ? Colors.white70
-                              : ClinicColors.inkFaint,
+                              : CityCareColors.inkFaint,
                         ),
                       ),
                     ],
@@ -363,12 +364,12 @@ class _SlotSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(ClinicSpacing.gutter),
+      padding: const EdgeInsets.all(CityCareSpacing.gutter),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Skeleton(width: 80, height: 16),
-          const SizedBox(height: ClinicSpacing.md),
+          const SizedBox(height: CityCareSpacing.md),
           Wrap(
             spacing: 8,
             runSpacing: 8,

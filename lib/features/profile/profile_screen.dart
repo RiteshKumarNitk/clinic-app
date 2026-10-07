@@ -42,7 +42,7 @@ class _SignedInProfile extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: ClinicColors.danger),
+            style: TextButton.styleFrom(foregroundColor: CityCareColors.danger),
             child: const Text('Log out'),
           ),
         ],
@@ -60,14 +60,14 @@ class _SignedInProfile extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: context.read<AuthController>().refreshProfile,
       child: ListView(
-        padding: const EdgeInsets.all(ClinicSpacing.gutter),
+        padding: const EdgeInsets.all(CityCareSpacing.gutter),
         children: [
           Container(
-            padding: const EdgeInsets.all(ClinicSpacing.xl),
+            padding: const EdgeInsets.all(CityCareSpacing.xl),
             decoration: BoxDecoration(
-              gradient: ClinicGradients.hero,
-              borderRadius: BorderRadius.circular(ClinicRadius.lg + 4),
-              boxShadow: ClinicShadows.soft,
+              gradient: CityCareGradients.hero,
+              borderRadius: BorderRadius.circular(CityCareRadius.lg + 4),
+              boxShadow: CityCareShadows.soft,
             ),
             child: Row(
               children: [
@@ -77,14 +77,14 @@ class _SignedInProfile extends StatelessWidget {
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: EntityAvatar(
+                  child: CityCareAvatar(
                     label: user?.fullName ?? '?',
                     imageUrl: user?.avatarUrl,
                     size: 64,
                     circle: true,
                   ),
                 ),
-                const SizedBox(width: ClinicSpacing.lg),
+                const SizedBox(width: CityCareSpacing.lg),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,7 +110,7 @@ class _SignedInProfile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: ClinicSpacing.lg),
+          const SizedBox(height: CityCareSpacing.lg),
           Card(
             clipBehavior: Clip.antiAlias,
             child: Column(
@@ -131,14 +131,14 @@ class _SignedInProfile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: ClinicSpacing.lg),
+          const SizedBox(height: CityCareSpacing.lg),
           Card(
             child: Column(
               children: [
                 const _Row(
                   icon: Icons.verified_user_outlined,
                   title: 'Signed in with Google',
-                  subtitle: 'Your Google account is your Clinic login.',
+                  subtitle: 'Your Google account is your CityCare login.',
                 ),
                 if (user?.phone != null) ...[
                   const Divider(indent: 72),
@@ -151,12 +151,12 @@ class _SignedInProfile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: ClinicSpacing.xl),
+          const SizedBox(height: CityCareSpacing.xl),
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
-              foregroundColor: ClinicColors.danger,
+              foregroundColor: CityCareColors.danger,
               side: const BorderSide(
-                color: ClinicColors.dangerSoft,
+                color: CityCareColors.dangerSoft,
                 width: 1.4,
               ),
             ),
@@ -195,23 +195,23 @@ class _GuestProfile extends StatelessWidget {
     final auth = context.watch<AuthController>();
     final theme = Theme.of(context);
     return ListView(
-      padding: const EdgeInsets.all(ClinicSpacing.gutter),
+      padding: const EdgeInsets.all(CityCareSpacing.gutter),
       children: [
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(ClinicSpacing.xl),
+            padding: const EdgeInsets.all(CityCareSpacing.xl),
             child: Column(
               children: [
                 const CircleAvatar(
                   radius: 38,
-                  backgroundColor: ClinicColors.primarySoft,
+                  backgroundColor: CityCareColors.primarySoft,
                   child: Icon(
                     Icons.person_outline_rounded,
                     size: 38,
-                    color: ClinicColors.primary,
+                    color: CityCareColors.primary,
                   ),
                 ),
-                const SizedBox(height: ClinicSpacing.md),
+                const SizedBox(height: CityCareSpacing.md),
                 Text('Guest', style: theme.textTheme.titleLarge),
                 const SizedBox(height: 4),
                 Text(
@@ -219,7 +219,7 @@ class _GuestProfile extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium,
                 ),
-                const SizedBox(height: ClinicSpacing.xl),
+                const SizedBox(height: CityCareSpacing.xl),
                 GoogleButton(
                   filled: true,
                   busy: auth.busy,
@@ -229,7 +229,7 @@ class _GuestProfile extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: ClinicSpacing.lg),
+        const SizedBox(height: CityCareSpacing.lg),
         TextButton.icon(
           onPressed: auth.busy ? null : auth.exitGuest,
           icon: const Icon(Icons.arrow_back_rounded),
@@ -261,10 +261,10 @@ class _Row extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: ClinicColors.primarySoft,
-          borderRadius: BorderRadius.circular(ClinicRadius.sm),
+          color: CityCareColors.primarySoft,
+          borderRadius: BorderRadius.circular(CityCareRadius.sm),
         ),
-        child: Icon(icon, color: ClinicColors.primary),
+        child: Icon(icon, color: CityCareColors.primary),
       ),
       title: Text(title, style: Theme.of(context).textTheme.titleSmall),
       subtitle: Text(subtitle),
@@ -272,7 +272,7 @@ class _Row extends StatelessWidget {
           ? null
           : const Icon(
               Icons.chevron_right_rounded,
-              color: ClinicColors.inkFaint,
+              color: CityCareColors.inkFaint,
             ),
       onTap: onTap,
     );

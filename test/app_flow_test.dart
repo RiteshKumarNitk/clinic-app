@@ -74,12 +74,12 @@ void main() {
       await noLogin();
       expect(find.text('Upcoming visit'), findsOneWidget);
 
-      await tester.tap(find.text('Appointments'));
+      await tester.tap(find.byKey(const ValueKey('nav:Appointments')));
       await noLogin();
       expect(find.text('My appointments'), findsOneWidget);
       expect(find.text('Dr. Demo Sharma'), findsWidgets);
 
-      await tester.tap(find.text('Find'));
+      await tester.tap(find.byKey(const ValueKey('nav:Find')));
       await noLogin();
       await tester.tap(
         find.text('Demo Clinic (synthetic data — not real patients)').first,
@@ -102,7 +102,7 @@ void main() {
         await tester.pageBack();
         await tester.pumpAndSettle();
       }
-      await tester.tap(find.text('Profile'));
+      await tester.tap(find.byKey(const ValueKey('nav:Profile')));
       await noLogin();
       expect(find.text('asha@example.com'), findsOneWidget);
     },
@@ -115,7 +115,7 @@ void main() {
       tester,
       session: const SessionTokens(accessToken: 'a', refreshToken: 'r'),
     );
-    await tester.tap(find.text('Profile'));
+    await tester.tap(find.byKey(const ValueKey('nav:Profile')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Log out'));
     await tester.pumpAndSettle();
@@ -167,7 +167,7 @@ void main() {
 
     testWidgets('guest Appointments tab asks to sign in', (tester) async {
       await enterAsGuest(tester);
-      await tester.tap(find.text('Appointments'));
+      await tester.tap(find.byKey(const ValueKey('nav:Appointments')));
       await tester.pumpAndSettle();
       expect(find.text('Your visits, in one place'), findsOneWidget);
       expect(find.text('Continue with Google'), findsOneWidget);
@@ -215,7 +215,7 @@ void main() {
 
     testWidgets('guest returns to login from Profile', (tester) async {
       await enterAsGuest(tester);
-      await tester.tap(find.text('Profile'));
+      await tester.tap(find.byKey(const ValueKey('nav:Profile')));
       await tester.pumpAndSettle();
       expect(find.text('Guest'), findsOneWidget);
       await tester.tap(find.text('Back to login'));
@@ -232,11 +232,11 @@ void main() {
       );
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Close Clinic?'), findsOneWidget);
+      expect(find.text('Close CityCare?'), findsOneWidget);
 
       await tester.tap(find.text('Stay'));
       await tester.pumpAndSettle();
-      expect(find.text('Close Clinic?'), findsNothing);
+      expect(find.text('Close CityCare?'), findsNothing);
       expect(find.text('Clinics to explore'), findsOneWidget);
     });
 
@@ -244,7 +244,7 @@ void main() {
       await pumpApp(tester);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Close Clinic?'), findsOneWidget);
+      expect(find.text('Close CityCare?'), findsOneWidget);
     });
 
     testWidgets('on an inner screen, just goes back', (tester) async {
@@ -261,7 +261,7 @@ void main() {
 
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Close Clinic?'), findsNothing);
+      expect(find.text('Close CityCare?'), findsNothing);
       expect(find.text('Clinics to explore'), findsOneWidget);
     });
   });

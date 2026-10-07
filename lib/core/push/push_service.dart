@@ -53,7 +53,7 @@ class FirebasePushService implements PushService {
 
   static const _channel = AndroidNotificationChannel(
     'clinic_updates',
-    'Clinic updates',
+    'CityCare updates',
     description: 'Appointment confirmations, reminders and queue updates.',
     importance: Importance.high,
   );

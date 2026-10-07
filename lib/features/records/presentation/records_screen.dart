@@ -28,7 +28,7 @@ class RecordsScreen extends StatelessWidget {
                   children: const [
                     SizedBox(
                       height: 480,
-                      child: MessageView(
+                      child: CityCareEmptyState(
                         icon: Icons.description_outlined,
                         title: 'No prescriptions yet',
                         message:
@@ -39,10 +39,10 @@ class RecordsScreen extends StatelessWidget {
                   ],
                 )
               : ListView.separated(
-                  padding: const EdgeInsets.all(ClinicSpacing.gutter),
+                  padding: const EdgeInsets.all(CityCareSpacing.gutter),
                   itemCount: list.length,
                   separatorBuilder: (_, _) =>
-                      const SizedBox(height: ClinicSpacing.md),
+                      const SizedBox(height: CityCareSpacing.md),
                   itemBuilder: (_, i) =>
                       PrescriptionCard(prescription: list[i]),
                 ),
@@ -64,7 +64,7 @@ class PrescriptionCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(ClinicSpacing.lg),
+        padding: const EdgeInsets.all(CityCareSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -74,16 +74,16 @@ class PrescriptionCard extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: ClinicColors.accentSoft,
-                    borderRadius: BorderRadius.circular(ClinicRadius.sm),
+                    color: CityCareColors.accentSoft,
+                    borderRadius: BorderRadius.circular(CityCareRadius.sm),
                   ),
                   child: const Icon(
                     Icons.receipt_long_rounded,
-                    color: ClinicColors.accent,
+                    color: CityCareColors.accent,
                     size: 22,
                   ),
                 ),
-                const SizedBox(width: ClinicSpacing.md),
+                const SizedBox(width: CityCareSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,11 +108,11 @@ class PrescriptionCard extends StatelessWidget {
               ],
             ),
             if (p.items.isNotEmpty) ...[
-              const SizedBox(height: ClinicSpacing.md),
+              const SizedBox(height: CityCareSpacing.md),
               const Divider(),
               for (final item in p.items)
                 Padding(
-                  padding: const EdgeInsets.only(top: ClinicSpacing.md),
+                  padding: const EdgeInsets.only(top: CityCareSpacing.md),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -121,10 +121,10 @@ class PrescriptionCard extends StatelessWidget {
                         child: Icon(
                           Icons.medication_rounded,
                           size: 18,
-                          color: ClinicColors.primary,
+                          color: CityCareColors.primary,
                         ),
                       ),
-                      const SizedBox(width: ClinicSpacing.sm),
+                      const SizedBox(width: CityCareSpacing.sm),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +148,7 @@ class PrescriptionCard extends StatelessWidget {
                 ),
             ],
             if (p.notes != null) ...[
-              const SizedBox(height: ClinicSpacing.md),
+              const SizedBox(height: CityCareSpacing.md),
               Text(p.notes!, style: theme.textTheme.bodyMedium),
             ],
           ],

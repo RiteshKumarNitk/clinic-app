@@ -20,7 +20,7 @@ Future<bool> requireSignIn(
   final ok = await showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: ClinicColors.surface,
+    backgroundColor: CityCareColors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
@@ -76,18 +76,18 @@ class _SignInSheetState extends State<_SignInSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: ClinicColors.border,
+                color: CityCareColors.border,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
-            const SizedBox(height: ClinicSpacing.xl),
+            const SizedBox(height: CityCareSpacing.xl),
             Container(
               width: 68,
               height: 68,
               decoration: BoxDecoration(
-                gradient: ClinicGradients.hero,
+                gradient: CityCareGradients.hero,
                 borderRadius: BorderRadius.circular(22),
-                boxShadow: ClinicShadows.soft,
+                boxShadow: CityCareShadows.soft,
               ),
               child: const Icon(
                 Icons.lock_person_rounded,
@@ -95,29 +95,29 @@ class _SignInSheetState extends State<_SignInSheet> {
                 size: 34,
               ),
             ),
-            const SizedBox(height: ClinicSpacing.lg),
+            const SizedBox(height: CityCareSpacing.lg),
             Text(
               widget.title,
               textAlign: TextAlign.center,
               style: theme.textTheme.headlineSmall,
             ),
-            const SizedBox(height: ClinicSpacing.sm),
+            const SizedBox(height: CityCareSpacing.sm),
             Text(
               widget.message,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15),
             ),
             if (_error != null) ...[
-              const SizedBox(height: ClinicSpacing.md),
+              const SizedBox(height: CityCareSpacing.md),
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: ClinicColors.danger),
+                style: const TextStyle(color: CityCareColors.danger),
               ),
             ],
-            const SizedBox(height: ClinicSpacing.xl),
+            const SizedBox(height: CityCareSpacing.xl),
             GoogleButton(onPressed: _signIn, busy: busy, filled: true),
-            const SizedBox(height: ClinicSpacing.sm),
+            const SizedBox(height: CityCareSpacing.sm),
             TextButton(
               onPressed: busy ? null : () => Navigator.pop(context, false),
               child: const Text('Keep browsing'),

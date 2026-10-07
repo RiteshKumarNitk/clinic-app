@@ -74,14 +74,14 @@ class BookingForPickerState extends State<BookingForPicker> {
               icon,
               size: 18,
               color: selected
-                  ? ClinicColors.primaryDark
-                  : ClinicColors.inkMuted,
+                  ? CityCareColors.primaryDark
+                  : CityCareColors.inkMuted,
             ),
       label: Text(label),
       selected: selected,
       showCheckmark: false,
       side: BorderSide(
-        color: selected ? ClinicColors.primary : ClinicColors.border,
+        color: selected ? CityCareColors.primary : CityCareColors.border,
       ),
       onSelected: (_) => setState(() => _selected = value),
     );
@@ -94,7 +94,7 @@ class BookingForPickerState extends State<BookingForPicker> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text('Who is this visit for?', style: theme.textTheme.titleMedium),
-        const SizedBox(height: ClinicSpacing.md),
+        const SizedBox(height: CityCareSpacing.md),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -118,7 +118,7 @@ class BookingForPickerState extends State<BookingForPicker> {
               : Form(
                   key: _form,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: ClinicSpacing.lg),
+                    padding: const EdgeInsets.only(top: CityCareSpacing.lg),
                     child: Column(
                       children: [
                         Row(
@@ -133,7 +133,7 @@ class BookingForPickerState extends State<BookingForPicker> {
                                 validator: _required,
                               ),
                             ),
-                            const SizedBox(width: ClinicSpacing.md),
+                            const SizedBox(width: CityCareSpacing.md),
                             Expanded(
                               child: TextFormField(
                                 controller: _last,
@@ -146,7 +146,7 @@ class BookingForPickerState extends State<BookingForPicker> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: ClinicSpacing.md),
+                        const SizedBox(height: CityCareSpacing.md),
                         DropdownButtonFormField<String>(
                           initialValue: _relation,
                           decoration: const InputDecoration(

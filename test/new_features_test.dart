@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:clinic_app/core/network/api_client.dart';
 import 'package:clinic_app/core/storage/token_storage.dart';
 import 'package:clinic_app/core/utils/clinic_time.dart';
+import 'package:clinic_app/core/widgets/citycare.dart';
 import 'package:clinic_app/features/appointments/data/appointment_models.dart';
 import 'package:clinic_app/features/appointments/data/appointment_repository.dart';
 import 'package:clinic_app/features/clinics/data/clinic_models.dart';
@@ -202,7 +203,7 @@ void main() {
       expect(find.text('Sita Verma (Mother)'), findsOneWidget);
       await tester.tap(find.text('Sita Verma (Mother)'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Confirm booking'));
+      await tester.tap(find.widgetWithText(CityCareButton, 'Confirm booking'));
       await tester.pumpAndSettle();
 
       final booking = backend.requests.lastWhere(
@@ -233,7 +234,7 @@ void main() {
 
     testWidgets('Find shows filter chips from the server', (tester) async {
       final (_, backend) = await pumpApp(tester, session: _session);
-      await tester.tap(find.text('Find'));
+      await tester.tap(find.byKey(const ValueKey('nav:Find')));
       await tester.pumpAndSettle();
       expect(find.text('Near me'), findsOneWidget);
       expect(find.text('City'), findsOneWidget);

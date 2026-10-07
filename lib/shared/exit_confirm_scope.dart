@@ -17,10 +17,10 @@ class ExitConfirmScope extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         icon: const Icon(
           Icons.exit_to_app_rounded,
-          color: ClinicColors.primary,
+          color: CityCareColors.primary,
           size: 32,
         ),
-        title: const Text('Close Clinic?'),
+        title: const Text('Close CityCare?'),
         content: const Text('Are you sure you want to exit the app?'),
         actionsAlignment: MainAxisAlignment.spaceBetween,
         actions: [

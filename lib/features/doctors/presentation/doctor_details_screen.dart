@@ -7,6 +7,7 @@ import '../../../app/theme.dart';
 import '../../../core/utils/clinic_time.dart';
 import '../../../core/widgets/async_view.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/widgets/citycare.dart';
 import '../../appointments/presentation/booking_draft.dart';
 import '../../auth/sign_in_sheet.dart';
 import '../../queue/data/queue_models.dart';
@@ -26,7 +27,7 @@ class DoctorDetailsScreen extends StatelessWidget {
       body: AsyncView<DoctorDetail>(
         load: () => repo.detail(doctorId),
         errorMessage: "We couldn't load this doctor.",
-        loading: const SkeletonList(count: 3, lines: 3),
+        loading: const CityCareLoading(count: 3, lines: 3),
         builder: (context, doctor, reload) => _DoctorBody(doctor: doctor),
       ),
     );
@@ -69,41 +70,85 @@ class _DoctorBodyState extends State<_DoctorBody> {
       children: [
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.all(ClinicSpacing.gutter),
+            padding: const EdgeInsets.all(CityCareSpacing.gutter),
             children: [
-              Center(
-                child: EntityAvatar(
-                  label: d.displayName,
-                  imageUrl: d.photoUrl,
-                  size: 96,
-                  circle: true,
-                ),
-              ),
-              const SizedBox(height: ClinicSpacing.lg),
-              Text(
-                d.displayName,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.headlineSmall,
-              ),
-              if (d.specialty != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  d.specialty!,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: ClinicColors.primaryDark,
+              FadeSlideIn(
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                  decoration: BoxDecoration(
+                    gradient: CityCareGradients.hero,
+                    borderRadius: BorderRadius.circular(CityCareRadius.xl),
+                    boxShadow: CityCareShadows.soft,
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: CityCareColors.lime,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: CityCareAvatar(
+                            label: d.displayName,
+                            imageUrl: d.photoUrl,
+                            size: 92,
+                            circle: true,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: CityCareSpacing.lg),
+                      Text(
+                        d.displayName,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                      if (d.specialty != null) ...[
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(
+                              CityCareRadius.pill,
+                            ),
+                          ),
+                          child: Text(
+                            d.specialty!,
+                            style: const TextStyle(
+                              color: CityCareColors.primaryDark,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (d.qualifications != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          d.qualifications!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13.5,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-              ],
-              if (d.qualifications != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  d.qualifications!,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
-              const SizedBox(height: ClinicSpacing.xl),
+              ),
+              const SizedBox(height: CityCareSpacing.lg),
               _Facts(
                 facts: [
                   if (d.yearsOfExperience != null)
@@ -113,10 +158,10 @@ class _DoctorBodyState extends State<_DoctorBody> {
                     ('Visit length', '${d.consultationDurationMin} min'),
                 ],
               ),
-              const SizedBox(height: ClinicSpacing.lg),
+              const SizedBox(height: CityCareSpacing.lg),
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(ClinicSpacing.lg),
+                  padding: const EdgeInsets.all(CityCareSpacing.lg),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -145,15 +190,15 @@ class _DoctorBodyState extends State<_DoctorBody> {
                 ),
               ),
               if (d.bio != null) ...[
-                const SizedBox(height: ClinicSpacing.lg),
+                const SizedBox(height: CityCareSpacing.lg),
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(ClinicSpacing.lg),
+                    padding: const EdgeInsets.all(CityCareSpacing.lg),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('About', style: theme.textTheme.titleSmall),
-                        const SizedBox(height: ClinicSpacing.sm),
+                        const SizedBox(height: CityCareSpacing.sm),
                         Text(d.bio!, style: theme.textTheme.bodyLarge),
                       ],
                     ),
@@ -161,7 +206,7 @@ class _DoctorBodyState extends State<_DoctorBody> {
                 ),
               ],
               if (_window != null) ...[
-                const SizedBox(height: ClinicSpacing.lg),
+                const SizedBox(height: CityCareSpacing.lg),
                 FutureBuilder<TokenWindow>(
                   future: _window,
                   builder: (_, snap) => snap.hasData
@@ -190,14 +235,14 @@ class _Facts extends StatelessWidget {
     return Row(
       children: [
         for (final (i, f) in facts.indexed) ...[
-          if (i > 0) const SizedBox(width: ClinicSpacing.sm),
+          if (i > 0) const SizedBox(width: CityCareSpacing.sm),
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
               decoration: BoxDecoration(
-                color: ClinicColors.surface,
-                borderRadius: BorderRadius.circular(ClinicRadius.md),
-                border: Border.all(color: ClinicColors.border),
+                color: CityCareColors.surface,
+                borderRadius: BorderRadius.circular(CityCareRadius.md),
+                border: Border.all(color: CityCareColors.border),
               ),
               child: Column(
                 children: [
@@ -223,18 +268,18 @@ class _TokenWindowCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final open = window.bookable;
     return Container(
-      padding: const EdgeInsets.all(ClinicSpacing.lg),
+      padding: const EdgeInsets.all(CityCareSpacing.lg),
       decoration: BoxDecoration(
-        color: open ? ClinicColors.successSoft : ClinicColors.warningSoft,
-        borderRadius: BorderRadius.circular(ClinicRadius.lg),
+        color: open ? CityCareColors.successSoft : CityCareColors.warningSoft,
+        borderRadius: BorderRadius.circular(CityCareRadius.lg),
       ),
       child: Row(
         children: [
           Icon(
             Icons.confirmation_number_outlined,
-            color: open ? ClinicColors.success : ClinicColors.warning,
+            color: open ? CityCareColors.success : CityCareColors.warning,
           ),
-          const SizedBox(width: ClinicSpacing.md),
+          const SizedBox(width: CityCareSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,14 +321,14 @@ class _ActionBar extends StatelessWidget {
     final mode = doctor.bookingMode;
     return Container(
       padding: const EdgeInsets.fromLTRB(
-        ClinicSpacing.gutter,
-        ClinicSpacing.md,
-        ClinicSpacing.gutter,
-        ClinicSpacing.md,
+        CityCareSpacing.gutter,
+        CityCareSpacing.md,
+        CityCareSpacing.gutter,
+        CityCareSpacing.md,
       ),
       decoration: const BoxDecoration(
-        color: ClinicColors.surface,
-        border: Border(top: BorderSide(color: ClinicColors.border)),
+        color: CityCareColors.surface,
+        border: Border(top: BorderSide(color: CityCareColors.border)),
       ),
       child: SafeArea(
         top: false,
@@ -291,39 +336,41 @@ class _ActionBar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (mode.offersSlots)
-              FilledButton.icon(
+              CityCareButton(
                 onPressed: () => _signedIn(
                   context,
                   () => context.push(Routes.bookType(doctor.id), extra: draft),
                 ),
-                icon: const Icon(Icons.event_available_rounded),
-                label: const Text('Book appointment'),
+                label: 'Book appointment',
+                trailingArrow: true,
+                accentRing: true,
               ),
             if (mode.offersTokens) ...[
-              if (mode.offersSlots) const SizedBox(height: ClinicSpacing.sm),
+              if (mode.offersSlots) const SizedBox(height: CityCareSpacing.sm),
               FutureBuilder<TokenWindow>(
                 future: window,
                 builder: (context, snap) {
                   final bookable = snap.data?.bookable ?? false;
-                  final child = Text(
-                    snap.connectionState != ConnectionState.done
-                        ? 'Checking today\'s tokens…'
-                        : bookable
-                        ? "Get today's token"
-                        : "Today's tokens unavailable",
-                  );
+                  final label = snap.connectionState != ConnectionState.done
+                      ? 'Checking today\'s tokens…'
+                      : bookable
+                      ? "Get today's token"
+                      : "Today's tokens unavailable";
                   void go() => _signedIn(
                     context,
                     () => context.push(Routes.token(doctor.id), extra: draft),
                   );
                   return mode.offersSlots
-                      ? OutlinedButton(
+                      ? CityCareOutlinedButton(
                           onPressed: bookable ? go : null,
-                          child: child,
+                          icon: Icons.confirmation_number_outlined,
+                          label: label,
                         )
-                      : FilledButton(
+                      : CityCareButton(
                           onPressed: bookable ? go : null,
-                          child: child,
+                          icon: Icons.confirmation_number_outlined,
+                          label: label,
+                          accentRing: bookable,
                         );
                 },
               ),

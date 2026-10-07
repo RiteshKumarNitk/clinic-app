@@ -9,23 +9,25 @@ import '../../../core/widgets/state_views.dart';
 import '../data/appointment_models.dart';
 
 /// Status pill colours, shared by list and details.
-StatusBadge statusBadge(AppointmentStatus s) {
+CityCareStatusBadge statusBadge(AppointmentStatus s) {
   final (fg, bg) = switch (s) {
     AppointmentStatus.confirmed || AppointmentStatus.checkedIn => (
-      ClinicColors.success,
-      ClinicColors.successSoft,
+      CityCareColors.success,
+      CityCareColors.successSoft,
     ),
     AppointmentStatus.requested ||
     AppointmentStatus.waiting ||
     AppointmentStatus.inConsultation => (
-      ClinicColors.accent,
-      ClinicColors.accentSoft,
+      CityCareColors.accent,
+      CityCareColors.accentSoft,
     ),
-    AppointmentStatus.cancelled ||
-    AppointmentStatus.noShow => (ClinicColors.danger, ClinicColors.dangerSoft),
-    _ => (ClinicColors.inkMuted, ClinicColors.skeleton),
+    AppointmentStatus.cancelled || AppointmentStatus.noShow => (
+      CityCareColors.danger,
+      CityCareColors.dangerSoft,
+    ),
+    _ => (CityCareColors.inkMuted, CityCareColors.skeleton),
   };
-  return StatusBadge(label: s.label, color: fg, background: bg);
+  return CityCareStatusBadge(label: s.label, color: fg, background: bg);
 }
 
 class AppointmentCard extends StatelessWidget {
@@ -45,7 +47,7 @@ class AppointmentCard extends StatelessWidget {
         onTap: () =>
             context.push(Routes.appointment(a.organizationId, a.id), extra: a),
         child: Padding(
-          padding: const EdgeInsets.all(ClinicSpacing.lg),
+          padding: const EdgeInsets.all(CityCareSpacing.lg),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -54,28 +56,28 @@ class AppointmentCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: a.status.isActive
-                      ? ClinicColors.primarySoft
-                      : ClinicColors.background,
-                  borderRadius: BorderRadius.circular(ClinicRadius.md),
+                      ? CityCareColors.primarySoft
+                      : CityCareColors.background,
+                  borderRadius: BorderRadius.circular(CityCareRadius.md),
                 ),
                 child: Column(
                   children: [
                     Text(
                       DateFormat('MMM').format(local).toUpperCase(),
                       style: theme.textTheme.labelMedium?.copyWith(
-                        color: ClinicColors.primaryDark,
+                        color: CityCareColors.primaryDark,
                       ),
                     ),
                     Text(
                       '${local.day}',
                       style: theme.textTheme.headlineSmall?.copyWith(
-                        color: ClinicColors.primaryDark,
+                        color: CityCareColors.primaryDark,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: ClinicSpacing.md),
+              const SizedBox(width: CityCareSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

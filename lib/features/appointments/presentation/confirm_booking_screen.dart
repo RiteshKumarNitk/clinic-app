@@ -10,6 +10,7 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/errors/api_exception.dart';
 import '../../../core/utils/clinic_time.dart';
+import '../../../core/widgets/citycare.dart';
 import '../data/appointment_models.dart';
 import '../data/appointment_repository.dart';
 import 'booking_draft.dart';
@@ -102,10 +103,10 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
           Expanded(
             child: ListView(
               children: [
-                BookingHeader(draft: d, step: 3, title: 'Confirm booking'),
+                BookingHeader(draft: d, step: 4, title: 'Confirm booking'),
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: ClinicSpacing.gutter,
+                    horizontal: CityCareSpacing.gutter,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -113,8 +114,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                       Card(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: ClinicSpacing.lg,
-                            vertical: ClinicSpacing.sm,
+                            horizontal: CityCareSpacing.lg,
+                            vertical: CityCareSpacing.sm,
                           ),
                           child: Column(
                             children: [
@@ -165,16 +166,16 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: ClinicSpacing.xl),
+                      const SizedBox(height: CityCareSpacing.xl),
                       BookingForPicker(
                         key: _for,
                         organizationId: d.organizationId,
                       ),
-                      const SizedBox(height: ClinicSpacing.xl),
+                      const SizedBox(height: CityCareSpacing.xl),
                       Text('Your details', style: theme.textTheme.titleMedium),
-                      const SizedBox(height: ClinicSpacing.md),
+                      const SizedBox(height: CityCareSpacing.md),
                       PatientDetailsForm(key: _patient),
-                      const SizedBox(height: ClinicSpacing.md),
+                      const SizedBox(height: CityCareSpacing.md),
                       TextField(
                         controller: _reason,
                         maxLines: 3,
@@ -186,14 +187,14 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                         ),
                       ),
                       if (_error != null) ...[
-                        const SizedBox(height: ClinicSpacing.sm),
+                        const SizedBox(height: CityCareSpacing.sm),
                         _ErrorBanner(
                           message: _error!,
                           actionLabel: _slotGone ? 'Choose another time' : null,
                           onAction: _slotGone ? () => context.pop() : null,
                         ),
                       ],
-                      const SizedBox(height: ClinicSpacing.xl),
+                      const SizedBox(height: CityCareSpacing.xl),
                     ],
                   ),
                 ),
@@ -201,18 +202,12 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
             ),
           ),
           BottomAction(
-            child: FilledButton(
-              onPressed: _submitting ? null : _book,
-              child: _submitting
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.4,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text('Confirm booking'),
+            child: CityCareButton(
+              onPressed: _book,
+              busy: _submitting,
+              label: 'Confirm booking',
+              icon: Icons.check_circle_outline_rounded,
+              accentRing: true,
             ),
           ),
         ],
@@ -231,10 +226,10 @@ class _ErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(ClinicSpacing.md),
+      padding: const EdgeInsets.all(CityCareSpacing.md),
       decoration: BoxDecoration(
-        color: ClinicColors.dangerSoft,
-        borderRadius: BorderRadius.circular(ClinicRadius.md),
+        color: CityCareColors.dangerSoft,
+        borderRadius: BorderRadius.circular(CityCareRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,14 +239,14 @@ class _ErrorBanner extends StatelessWidget {
             children: [
               const Icon(
                 Icons.error_outline_rounded,
-                color: ClinicColors.danger,
+                color: CityCareColors.danger,
                 size: 20,
               ),
-              const SizedBox(width: ClinicSpacing.sm),
+              const SizedBox(width: CityCareSpacing.sm),
               Expanded(
                 child: Text(
                   message,
-                  style: const TextStyle(color: ClinicColors.danger),
+                  style: const TextStyle(color: CityCareColors.danger),
                 ),
               ),
             ],

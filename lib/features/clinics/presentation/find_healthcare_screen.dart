@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/utils/device_location.dart';
+import '../../../core/widgets/citycare.dart';
 import '../../../core/widgets/paged_list.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../doctors/data/doctor_repository.dart';
@@ -134,7 +135,7 @@ class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
                 trailing: c == _city
                     ? const Icon(
                         Icons.check_rounded,
-                        color: ClinicColors.primary,
+                        color: CityCareColors.primary,
                       )
                     : null,
                 onTap: () => Navigator.pop(ctx, c),
@@ -155,29 +156,12 @@ class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
   }) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        avatar: busy
-            ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : icon == null
-            ? null
-            : Icon(
-                icon,
-                size: 18,
-                color: selected
-                    ? ClinicColors.primaryDark
-                    : ClinicColors.inkMuted,
-              ),
-        label: Text(label),
+      child: CityCareChip(
+        label: label,
+        icon: icon,
         selected: selected,
-        showCheckmark: false,
-        side: BorderSide(
-          color: selected ? ClinicColors.primary : ClinicColors.border,
-        ),
-        onSelected: (_) => onTap(),
+        busy: busy,
+        onTap: onTap,
       ),
     );
   }
@@ -216,13 +200,13 @@ class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
                     setState(() => _specialty = _specialty == s ? null : s),
               ),
           ];
-    if (children.isEmpty) return const SizedBox(height: ClinicSpacing.sm);
+    if (children.isEmpty) return const SizedBox(height: CityCareSpacing.sm);
     return SizedBox(
       height: 52,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
-          horizontal: ClinicSpacing.gutter,
+          horizontal: CityCareSpacing.gutter,
           vertical: 6,
         ),
         children: children,
@@ -246,37 +230,23 @@ class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              ClinicSpacing.gutter,
-              ClinicSpacing.xs,
-              ClinicSpacing.gutter,
-              ClinicSpacing.md,
+              CityCareSpacing.gutter,
+              CityCareSpacing.xs,
+              CityCareSpacing.gutter,
+              CityCareSpacing.md,
             ),
-            child: TextField(
+            child: CityCareSearchBar(
               controller: _search,
               onChanged: _onChanged,
-              textInputAction: TextInputAction.search,
               onSubmitted: (v) => setState(() => _query = v.trim()),
-              decoration: InputDecoration(
-                hintText: _mode == _Mode.clinics
-                    ? 'Search clinics'
-                    : 'Search doctors or specialties',
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: _search.text.isEmpty
-                    ? null
-                    : IconButton(
-                        tooltip: 'Clear',
-                        icon: const Icon(Icons.close_rounded),
-                        onPressed: () {
-                          _search.clear();
-                          setState(() => _query = '');
-                        },
-                      ),
-              ),
+              hint: _mode == _Mode.clinics
+                  ? 'Search clinics'
+                  : 'Search doctors or specialties',
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: ClinicSpacing.gutter,
+              horizontal: CityCareSpacing.gutter,
             ),
             child: SizedBox(
               width: double.infinity,
@@ -299,7 +269,7 @@ class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
               ),
             ),
           ),
-          const SizedBox(height: ClinicSpacing.xs),
+          const SizedBox(height: CityCareSpacing.xs),
           _filterRow(),
           Expanded(
             child: _mode == _Mode.clinics
@@ -316,7 +286,7 @@ class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
                     ),
                     itemBuilder: (_, c) => ClinicCard(clinic: c),
                     errorMessage: "We couldn't load clinics.",
-                    empty: MessageView(
+                    empty: CityCareEmptyState(
                       icon: Icons.local_hospital_outlined,
                       title: filtered
                           ? 'No clinics match these filters.'
@@ -336,7 +306,7 @@ class _FindHealthcareScreenState extends State<FindHealthcareScreen> {
                     itemBuilder: (_, d) =>
                         DoctorCard(doctor: d, showClinic: true),
                     errorMessage: "We couldn't load doctors.",
-                    empty: MessageView(
+                    empty: CityCareEmptyState(
                       icon: Icons.medical_services_outlined,
                       title: filtered
                           ? 'No doctors match these filters.'

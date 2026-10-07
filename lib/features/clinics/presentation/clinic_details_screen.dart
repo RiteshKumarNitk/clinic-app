@@ -50,7 +50,7 @@ class _ClinicBody extends StatelessWidget {
         SliverAppBar(
           pinned: true,
           expandedHeight: clinic.coverImageUrl != null ? 200 : 0,
-          backgroundColor: ClinicColors.background,
+          backgroundColor: CityCareColors.background,
           flexibleSpace: clinic.coverImageUrl == null
               ? null
               : FlexibleSpaceBar(
@@ -58,29 +58,29 @@ class _ClinicBody extends StatelessWidget {
                     clinic.coverImageUrl!,
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) =>
-                        const ColoredBox(color: ClinicColors.primarySoft),
+                        const ColoredBox(color: CityCareColors.primarySoft),
                   ),
                 ),
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(
-            ClinicSpacing.gutter,
-            ClinicSpacing.sm,
-            ClinicSpacing.gutter,
-            ClinicSpacing.xxl,
+            CityCareSpacing.gutter,
+            CityCareSpacing.sm,
+            CityCareSpacing.gutter,
+            CityCareSpacing.xxl,
           ),
           sliver: SliverList.list(
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  EntityAvatar(
+                  CityCareAvatar(
                     label: clinic.name,
                     imageUrl: clinic.logoUrl,
                     size: 64,
                     icon: Icons.local_hospital_outlined,
                   ),
-                  const SizedBox(width: ClinicSpacing.lg),
+                  const SizedBox(width: CityCareSpacing.lg),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,10 +95,10 @@ class _ClinicBody extends StatelessWidget {
                                 VerificationStatus.verified)
                               const VerifiedBadge(),
                             if (type != null)
-                              StatusBadge(
+                              CityCareStatusBadge(
                                 label: type,
-                                color: ClinicColors.accent,
-                                background: ClinicColors.accentSoft,
+                                color: CityCareColors.accent,
+                                background: CityCareColors.accentSoft,
                               ),
                           ],
                         ),
@@ -108,12 +108,12 @@ class _ClinicBody extends StatelessWidget {
                 ],
               ),
               if (clinic.tagline != null) ...[
-                const SizedBox(height: ClinicSpacing.md),
+                const SizedBox(height: CityCareSpacing.md),
                 Text(clinic.tagline!, style: theme.textTheme.bodyLarge),
               ],
-              const SizedBox(height: ClinicSpacing.lg),
+              const SizedBox(height: CityCareSpacing.lg),
               _ClinicActions(clinic: clinic),
-              const SizedBox(height: ClinicSpacing.xl),
+              const SizedBox(height: CityCareSpacing.xl),
               _Panel(
                 title: 'Contact & location',
                 children: [
@@ -145,7 +145,7 @@ class _ClinicBody extends StatelessWidget {
                 ],
               ),
               if (clinic.about != null) ...[
-                const SizedBox(height: ClinicSpacing.lg),
+                const SizedBox(height: CityCareSpacing.lg),
                 _Panel(
                   title: 'About',
                   children: [
@@ -154,7 +154,7 @@ class _ClinicBody extends StatelessWidget {
                 ),
               ],
               if (clinic.appointmentTypes.isNotEmpty) ...[
-                const SizedBox(height: ClinicSpacing.lg),
+                const SizedBox(height: CityCareSpacing.lg),
                 _Panel(
                   title: 'Appointment types',
                   children: [
@@ -167,7 +167,7 @@ class _ClinicBody extends StatelessWidget {
                             avatar: const Icon(
                               Icons.schedule_rounded,
                               size: 16,
-                              color: ClinicColors.primary,
+                              color: CityCareColors.primary,
                             ),
                             label: Text('${t.name} · ${t.durationMinutes} min'),
                           ),
@@ -176,12 +176,14 @@ class _ClinicBody extends StatelessWidget {
                   ],
                 ),
               ],
-              const SizedBox(height: ClinicSpacing.xl),
-              SectionHeader(title: 'Doctors (${clinic.doctors.length})'),
+              const SizedBox(height: CityCareSpacing.xl),
+              CityCareSectionHeader(
+                title: 'Doctors (${clinic.doctors.length})',
+              ),
               if (clinic.doctors.isEmpty)
                 const Card(
                   child: Padding(
-                    padding: EdgeInsets.all(ClinicSpacing.lg),
+                    padding: EdgeInsets.all(CityCareSpacing.lg),
                     child: Text(
                       'No doctors are currently available at this clinic.',
                     ),
@@ -190,7 +192,7 @@ class _ClinicBody extends StatelessWidget {
               else
                 for (final d in clinic.doctors) ...[
                   DoctorCard(doctor: d),
-                  const SizedBox(height: ClinicSpacing.md),
+                  const SizedBox(height: CityCareSpacing.md),
                 ],
             ],
           ),
@@ -211,12 +213,12 @@ class _Panel extends StatelessWidget {
     if (children.isEmpty) return const SizedBox.shrink();
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(ClinicSpacing.lg),
+        padding: const EdgeInsets.all(CityCareSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: ClinicSpacing.sm),
+            const SizedBox(height: CityCareSpacing.sm),
             ...children,
           ],
         ),
@@ -233,13 +235,13 @@ class _ClinicSkeleton extends StatelessWidget {
     return SafeArea(
       child: ListView(
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(ClinicSpacing.gutter),
+        padding: const EdgeInsets.all(CityCareSpacing.gutter),
         children: const [
           SizedBox(height: 48),
           Row(
             children: [
               Skeleton(width: 64, height: 64, radius: 16),
-              SizedBox(width: ClinicSpacing.lg),
+              SizedBox(width: CityCareSpacing.lg),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,14 +254,14 @@ class _ClinicSkeleton extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: ClinicSpacing.xl),
-          SkeletonCard(avatar: false, lines: 3),
-          SizedBox(height: ClinicSpacing.xl),
+          SizedBox(height: CityCareSpacing.xl),
+          CityCareSkeletonCard(avatar: false, lines: 3),
+          SizedBox(height: CityCareSpacing.xl),
           Skeleton(width: 120, height: 18),
-          SizedBox(height: ClinicSpacing.md),
-          SkeletonCard(),
-          SizedBox(height: ClinicSpacing.md),
-          SkeletonCard(),
+          SizedBox(height: CityCareSpacing.md),
+          CityCareSkeletonCard(),
+          SizedBox(height: CityCareSpacing.md),
+          CityCareSkeletonCard(),
         ],
       ),
     );
@@ -312,23 +314,23 @@ class _ClinicActions extends StatelessWidget {
     return Row(
       children: [
         for (final (i, a) in actions.indexed) ...[
-          if (i > 0) const SizedBox(width: ClinicSpacing.sm),
+          if (i > 0) const SizedBox(width: CityCareSpacing.sm),
           Expanded(
             child: Material(
-              color: ClinicColors.surface,
-              borderRadius: BorderRadius.circular(ClinicRadius.md),
+              color: CityCareColors.surface,
+              borderRadius: BorderRadius.circular(CityCareRadius.md),
               child: InkWell(
-                borderRadius: BorderRadius.circular(ClinicRadius.md),
+                borderRadius: BorderRadius.circular(CityCareRadius.md),
                 onTap: a.$3,
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(ClinicRadius.md),
-                    border: Border.all(color: ClinicColors.border),
+                    borderRadius: BorderRadius.circular(CityCareRadius.md),
+                    border: Border.all(color: CityCareColors.border),
                   ),
                   child: Column(
                     children: [
-                      Icon(a.$1, color: ClinicColors.primary),
+                      Icon(a.$1, color: CityCareColors.primary),
                       const SizedBox(height: 4),
                       Text(
                         a.$2,

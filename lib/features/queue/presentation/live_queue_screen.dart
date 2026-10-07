@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -8,6 +9,7 @@ import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/errors/api_exception.dart';
+import '../../../core/widgets/citycare.dart';
 import '../../../core/widgets/state_views.dart';
 import '../data/queue_models.dart';
 import '../data/queue_repository.dart';
@@ -99,7 +101,7 @@ class _LiveQueueScreenState extends State<LiveQueueScreen>
       ),
       body: s == null
           ? _error != null
-                ? ErrorView(
+                ? CityCareErrorState(
                     message: friendlyMessage(
                       _error!,
                       fallback: "We couldn't load your queue status.",
@@ -110,35 +112,38 @@ class _LiveQueueScreenState extends State<LiveQueueScreen>
           : RefreshIndicator(
               onRefresh: _poll,
               child: ListView(
-                padding: const EdgeInsets.all(ClinicSpacing.gutter),
+                padding: const EdgeInsets.all(CityCareSpacing.gutter),
                 children: [
-                  _TokenHero(status: s),
-                  const SizedBox(height: ClinicSpacing.lg),
+                  _TokenHero(status: s, live: !s.isFinished && _error == null),
+                  const SizedBox(height: CityCareSpacing.lg),
                   Row(
                     children: [
                       Expanded(
                         child: _Stat(
-                          label: 'Now serving',
+                          icon: Icons.campaign_rounded,
+                          label: 'Current token',
                           value: s.nowServingToken == null
                               ? '—'
                               : '#${s.nowServingToken}',
                         ),
                       ),
-                      const SizedBox(width: ClinicSpacing.md),
+                      const SizedBox(width: CityCareSpacing.md),
                       Expanded(
                         child: _Stat(
-                          label: 'People ahead',
+                          icon: Icons.groups_rounded,
+                          label: 'Patients ahead',
                           value: s.state == 'WAITING' ? '${s.ahead}' : '—',
+                          highlight: true,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: ClinicSpacing.lg),
+                  const SizedBox(height: CityCareSpacing.lg),
                   if (s.advice != null) _Advice(status: s),
-                  const SizedBox(height: ClinicSpacing.lg),
+                  const SizedBox(height: CityCareSpacing.lg),
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(ClinicSpacing.lg),
+                      padding: const EdgeInsets.all(CityCareSpacing.lg),
                       child: Column(
                         children: [
                           if (s.doctorName != null)
@@ -154,13 +159,13 @@ class _LiveQueueScreenState extends State<LiveQueueScreen>
                           if (s.queueDate != null)
                             InfoRow(
                               icon: Icons.event_outlined,
-                              text: s.queueDate!,
+                              text: _prettyDate(s.queueDate!),
                             ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: ClinicSpacing.md),
+                  const SizedBox(height: CityCareSpacing.md),
                   if (widget.organizationId != null)
                     TextButton(
                       onPressed: () => context.push(
@@ -190,61 +195,95 @@ class _LiveQueueScreenState extends State<LiveQueueScreen>
 }
 
 class _TokenHero extends StatelessWidget {
-  const _TokenHero({required this.status});
+  const _TokenHero({required this.status, required this.live});
 
   final TokenStatus status;
+
+  /// Still polling: show the pulsing LIVE pill.
+  final bool live;
 
   @override
   Widget build(BuildContext context) {
     final called = status.state == 'CALLED';
     return AnimatedContainer(
       duration: const Duration(milliseconds: 400),
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+      padding: const EdgeInsets.fromLTRB(22, 18, 22, 26),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: called
-              ? const [Color(0xFF15803D), Color(0xFF0F5F2E)]
-              : const [ClinicColors.primary, ClinicColors.primaryDark],
-        ),
-        borderRadius: BorderRadius.circular(ClinicRadius.lg + 4),
+        gradient: called
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF1F9A70), Color(0xFF14724F)],
+              )
+            : CityCareGradients.hero,
+        borderRadius: BorderRadius.circular(CityCareRadius.xl + 4),
+        boxShadow: CityCareShadows.soft,
       ),
       child: Column(
         children: [
-          const Text(
-            'YOUR TOKEN',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.4,
-            ),
+          Row(
+            children: [
+              const Text(
+                'YOUR TOKEN',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.6,
+                ),
+              ),
+              const Spacer(),
+              if (live)
+                Container(
+                  padding: const EdgeInsets.only(left: 2, right: 10),
+                  decoration: BoxDecoration(
+                    color: CityCareColors.navy.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(CityCareRadius.pill),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      LiveDot(size: 8),
+                      Text(
+                        'LIVE',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           Semantics(
             label: 'Token number ${status.tokenNumber}',
+            excludeSemantics: true,
             child: Text(
               '#${status.tokenNumber}',
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 64,
+                fontSize: 76,
                 fontWeight: FontWeight.w800,
-                height: 1.05,
+                height: 1.0,
+                letterSpacing: -2,
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(999),
+              color: called ? CityCareColors.lime : Colors.white,
+              borderRadius: BorderRadius.circular(CityCareRadius.pill),
             ),
             child: Text(
               status.stateLabel.toUpperCase(),
               style: const TextStyle(
-                color: Colors.white,
+                color: CityCareColors.navy,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
@@ -258,28 +297,56 @@ class _TokenHero extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value});
+  const _Stat({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.highlight = false,
+  });
 
+  final IconData icon;
   final String label;
   final String value;
+  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(color: ClinicColors.ink),
+    return Container(
+      padding: const EdgeInsets.all(CityCareSpacing.lg),
+      decoration: BoxDecoration(
+        color: highlight ? CityCareColors.navy : CityCareColors.surface,
+        borderRadius: BorderRadius.circular(CityCareRadius.lg),
+        border: highlight ? null : Border.all(color: CityCareColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            size: 22,
+            color: highlight ? CityCareColors.lime : CityCareColors.primary,
+          ),
+          const SizedBox(height: CityCareSpacing.md),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 34,
+              fontWeight: FontWeight.w800,
+              height: 1,
+              letterSpacing: -1,
+              color: highlight ? Colors.white : CityCareColors.ink,
             ),
-            const SizedBox(height: 2),
-            Text(label, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              color: highlight ? CityCareColors.mint : CityCareColors.inkMuted,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -294,41 +361,41 @@ class _Advice extends StatelessWidget {
   Widget build(BuildContext context) {
     final (fg, bg, icon) = switch (status.adviceTone) {
       AdviceTone.actNow => (
-        ClinicColors.success,
-        ClinicColors.successSoft,
+        CityCareColors.success,
+        CityCareColors.successSoft,
         Icons.campaign_rounded,
       ),
       AdviceTone.done => (
-        ClinicColors.success,
-        ClinicColors.successSoft,
+        CityCareColors.success,
+        CityCareColors.successSoft,
         Icons.check_circle_rounded,
       ),
       AdviceTone.seeReception => (
-        ClinicColors.warning,
-        ClinicColors.warningSoft,
+        CityCareColors.warning,
+        CityCareColors.warningSoft,
         Icons.support_agent_rounded,
       ),
       AdviceTone.problem => (
-        ClinicColors.danger,
-        ClinicColors.dangerSoft,
+        CityCareColors.danger,
+        CityCareColors.dangerSoft,
         Icons.error_outline_rounded,
       ),
       AdviceTone.wait => (
-        ClinicColors.accent,
-        ClinicColors.accentSoft,
+        CityCareColors.accent,
+        CityCareColors.accentSoft,
         Icons.hourglass_top_rounded,
       ),
     };
     return Container(
-      padding: const EdgeInsets.all(ClinicSpacing.lg),
+      padding: const EdgeInsets.all(CityCareSpacing.lg),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(ClinicRadius.md),
+        borderRadius: BorderRadius.circular(CityCareRadius.md),
       ),
       child: Row(
         children: [
           Icon(icon, color: fg),
-          const SizedBox(width: ClinicSpacing.md),
+          const SizedBox(width: CityCareSpacing.md),
           Expanded(
             child: Text(
               status.advice!,
@@ -347,22 +414,28 @@ class _QueueSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Padding(
-      padding: EdgeInsets.all(ClinicSpacing.gutter),
+      padding: EdgeInsets.all(CityCareSpacing.gutter),
       child: Column(
         children: [
           Skeleton(height: 190, radius: 24),
-          SizedBox(height: ClinicSpacing.lg),
+          SizedBox(height: CityCareSpacing.lg),
           Row(
             children: [
               Expanded(child: Skeleton(height: 90, radius: 20)),
-              SizedBox(width: ClinicSpacing.md),
+              SizedBox(width: CityCareSpacing.md),
               Expanded(child: Skeleton(height: 90, radius: 20)),
             ],
           ),
-          SizedBox(height: ClinicSpacing.lg),
+          SizedBox(height: CityCareSpacing.lg),
           Skeleton(height: 60, radius: 14),
         ],
       ),
     );
   }
+}
+
+/// "2026-10-07" (clinic-local day from the server) → "Wed, 7 Oct 2026".
+String _prettyDate(String day) {
+  final d = DateTime.tryParse(day);
+  return d == null ? day : DateFormat('EEE, d MMM yyyy').format(d);
 }

@@ -17,61 +17,34 @@ class BookingHeader extends StatelessWidget {
   final int step;
   final String title;
 
-  static const steps = 3;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        ClinicSpacing.gutter,
+        CityCareSpacing.gutter,
         0,
-        ClinicSpacing.gutter,
-        ClinicSpacing.lg,
+        CityCareSpacing.gutter,
+        CityCareSpacing.lg,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (step > 0)
-            Row(
-              children: [
-                for (var i = 1; i <= steps; i++) ...[
-                  Expanded(
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: i <= step
-                            ? ClinicColors.primary
-                            : ClinicColors.border,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                  if (i < steps) const SizedBox(width: 6),
-                ],
-              ],
-            ),
-          if (step > 0) const SizedBox(height: ClinicSpacing.md),
-          if (step > 0)
-            Text(
-              'Step $step of $steps',
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: ClinicColors.inkMuted,
-              ),
-            ),
-          const SizedBox(height: 4),
-          Text(title, style: theme.textTheme.headlineSmall),
-          const SizedBox(height: ClinicSpacing.md),
+          if (step > 0) ...[
+            BookingProgress(step: step),
+            const SizedBox(height: CityCareSpacing.lg),
+          ],
+          Text(title, style: theme.textTheme.headlineMedium),
+          const SizedBox(height: CityCareSpacing.md),
           Row(
             children: [
-              EntityAvatar(
+              CityCareAvatar(
                 label: draft.doctor.displayName,
                 imageUrl: draft.doctor.photoUrl,
                 size: 40,
                 circle: true,
               ),
-              const SizedBox(width: ClinicSpacing.md),
+              const SizedBox(width: CityCareSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,14 +83,14 @@ class BottomAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(
-        ClinicSpacing.gutter,
-        ClinicSpacing.md,
-        ClinicSpacing.gutter,
-        ClinicSpacing.md,
+        CityCareSpacing.gutter,
+        CityCareSpacing.md,
+        CityCareSpacing.gutter,
+        CityCareSpacing.md,
       ),
       decoration: const BoxDecoration(
-        color: ClinicColors.surface,
-        border: Border(top: BorderSide(color: ClinicColors.border)),
+        color: CityCareColors.surface,
+        border: Border(top: BorderSide(color: CityCareColors.border)),
       ),
       child: SafeArea(top: false, child: child),
     );
@@ -145,13 +118,93 @@ class SummaryRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: ClinicColors.primary),
-          const SizedBox(width: ClinicSpacing.md),
+          Icon(icon, size: 20, color: CityCareColors.primary),
+          const SizedBox(width: CityCareSpacing.md),
           SizedBox(
             width: 92,
             child: Text(label, style: theme.textTheme.bodyMedium),
           ),
           Expanded(child: Text(value, style: theme.textTheme.titleSmall)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Appointment → Date → Time → Confirm, with the current step labelled.
+class BookingProgress extends StatelessWidget {
+  const BookingProgress({super.key, required this.step});
+
+  /// 1-based: 1 type, 2 date, 3 time, 4 confirm.
+  final int step;
+
+  static const labels = ['Appointment', 'Date', 'Time', 'Confirm'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Step $step of ${labels.length}: ${labels[step - 1]}',
+      excludeSemantics: true,
+      child: Row(
+        children: [
+          for (var i = 1; i <= labels.length; i++) ...[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    height: 5,
+                    decoration: BoxDecoration(
+                      gradient: i <= step ? CityCareGradients.button : null,
+                      color: i <= step ? null : CityCareColors.border,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      if (i == step) ...[
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: CityCareColors.lime,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0x4012324A),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      Flexible(
+                        child: Text(
+                          labels[i - 1],
+                          maxLines: 1,
+                          overflow: TextOverflow.fade,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: i == step
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                            color: i <= step
+                                ? CityCareColors.primaryDark
+                                : CityCareColors.inkFaint,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (i < labels.length) const SizedBox(width: 6),
+          ],
         ],
       ),
     );

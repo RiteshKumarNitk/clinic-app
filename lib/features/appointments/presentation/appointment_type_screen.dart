@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../app/theme.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/widgets/citycare.dart';
 import '../../clinics/data/clinic_models.dart';
 import 'booking_draft.dart';
 import 'booking_widgets.dart';
@@ -45,7 +46,7 @@ class _AppointmentTypeScreenState extends State<AppointmentTypeScreen> {
           BookingHeader(draft: widget.draft, step: 1, title: 'Type of visit'),
           Expanded(
             child: noTypes
-                ? const MessageView(
+                ? const CityCareEmptyState(
                     icon: Icons.medical_information_outlined,
                     title: 'Standard consultation',
                     message:
@@ -53,11 +54,11 @@ class _AppointmentTypeScreenState extends State<AppointmentTypeScreen> {
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: ClinicSpacing.gutter,
+                      horizontal: CityCareSpacing.gutter,
                     ),
                     itemCount: _types.length,
                     separatorBuilder: (_, _) =>
-                        const SizedBox(height: ClinicSpacing.md),
+                        const SizedBox(height: CityCareSpacing.md),
                     itemBuilder: (context, i) {
                       final t = _types[i];
                       final selected = _selected?.id == t.id;
@@ -65,21 +66,25 @@ class _AppointmentTypeScreenState extends State<AppointmentTypeScreen> {
                         duration: const Duration(milliseconds: 180),
                         decoration: BoxDecoration(
                           color: selected
-                              ? ClinicColors.primarySoft
-                              : ClinicColors.surface,
-                          borderRadius: BorderRadius.circular(ClinicRadius.lg),
+                              ? CityCareColors.primarySoft
+                              : CityCareColors.surface,
+                          borderRadius: BorderRadius.circular(
+                            CityCareRadius.lg,
+                          ),
                           border: Border.all(
                             color: selected
-                                ? ClinicColors.primary
-                                : ClinicColors.border,
+                                ? CityCareColors.primary
+                                : CityCareColors.border,
                             width: selected ? 1.6 : 1,
                           ),
                         ),
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(ClinicRadius.lg),
+                          borderRadius: BorderRadius.circular(
+                            CityCareRadius.lg,
+                          ),
                           onTap: () => setState(() => _selected = t),
                           child: Padding(
-                            padding: const EdgeInsets.all(ClinicSpacing.lg),
+                            padding: const EdgeInsets.all(CityCareSpacing.lg),
                             child: Row(
                               children: [
                                 Icon(
@@ -87,10 +92,10 @@ class _AppointmentTypeScreenState extends State<AppointmentTypeScreen> {
                                       ? Icons.radio_button_checked_rounded
                                       : Icons.radio_button_off_rounded,
                                   color: selected
-                                      ? ClinicColors.primary
-                                      : ClinicColors.inkFaint,
+                                      ? CityCareColors.primary
+                                      : CityCareColors.inkFaint,
                                 ),
-                                const SizedBox(width: ClinicSpacing.md),
+                                const SizedBox(width: CityCareSpacing.md),
                                 Expanded(
                                   child: Text(
                                     t.name,
@@ -110,9 +115,10 @@ class _AppointmentTypeScreenState extends State<AppointmentTypeScreen> {
                   ),
           ),
           BottomAction(
-            child: FilledButton(
+            child: CityCareButton(
               onPressed: noTypes || _selected != null ? _continue : null,
-              child: const Text('Choose a time'),
+              label: 'Choose a time',
+              trailingArrow: true,
             ),
           ),
         ],
